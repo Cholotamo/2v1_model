@@ -6,7 +6,6 @@ from sklearn.naive_bayes import GaussianNB
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import classification_report, accuracy_score
-from sklearn.multiclass import OneVsRestClassifier
 import joblib
 import itertools
 
@@ -43,9 +42,6 @@ for (stage_1_name, stage_1_model), (stage_2_name, stage_2_model) in itertools.pr
     # Train the stage 1 model
     stage_1_model.fit(X_train_stage_1, y_train_stage_1)
 
-    # Save the trained stage 1 model
-    joblib.dump(stage_1_model, f'models/stage_1_{stage_1_name.replace(" ", "_").lower()}_model.pkl')
-
     # Use the stage 1 model to predict labels for stage 2 data
     stage_1_predictions = stage_1_model.predict(X_stage_2)
 
@@ -76,5 +72,5 @@ for (stage_1_name, stage_1_model), (stage_2_name, stage_2_model) in itertools.pr
     print('Classification Report:')
     print(report)
 
-    # Save the trained stage 2 model
-    joblib.dump(stage_2_model, f'models/stage_2_{stage_2_name.replace(" ", "_").lower()}_model.pkl')
+    # Save the trained stage 2 model with a filename that reflects both stage 1 and stage 2 model names
+    joblib.dump(stage_2_model, f'models/{stage_1_name.replace(" ", "_").lower()}_to_{stage_2_name.replace(" ", "_").lower()}_model.pkl')
