@@ -6,6 +6,7 @@ from sklearn.naive_bayes import GaussianNB
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import classification_report, accuracy_score
+from sklearn.base import clone
 import joblib
 import itertools
 
@@ -35,6 +36,10 @@ y_stage_2 = np.where(y_stage_2 == 'healthy', 2, 1)  # 2 for healthy, 1 for sick
 # Iterate through all permutations of models for stage 1 and stage 2
 for (stage_1_name, stage_1_model), (stage_2_name, stage_2_model) in itertools.product(models.items(), repeat=2):
     print(f"Training {stage_1_name} for stage 1 and {stage_2_name} for stage 2")
+
+    # Clone the models to ensure a fresh instance for each iteration
+    stage_1_model = clone(stage_1_model)
+    stage_2_model = clone(stage_2_model)
 
     # Split stage 1 data into training and testing sets
     X_train_stage_1, X_test_stage_1, y_train_stage_1, y_test_stage_1 = train_test_split(X_stage_1, y_stage_1, test_size=0.2, random_state=42)
