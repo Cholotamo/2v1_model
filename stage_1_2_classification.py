@@ -9,6 +9,7 @@ from sklearn.metrics import classification_report, accuracy_score
 from sklearn.base import clone
 import joblib
 import itertools
+import csv
 
 # Define models
 models = {
@@ -32,6 +33,9 @@ y_stage_2 = np.load('stage_2_labels.npy')
 
 # Encode stage 2 labels
 y_stage_2 = np.where(y_stage_2 == 'healthy', 2, 1)  # 2 for healthy, 1 for sick
+
+# List to store model names and their accuracies
+model_accuracies = []
 
 # Iterate through all permutations of models for stage 1 and stage 2
 for (stage_1_name, stage_1_model), (stage_2_name, stage_2_model) in itertools.product(models.items(), repeat=2):
@@ -79,3 +83,12 @@ for (stage_1_name, stage_1_model), (stage_2_name, stage_2_model) in itertools.pr
 
     # Save the trained stage 2 model with a filename that reflects both stage 1 and stage 2 model names
     joblib.dump(stage_2_model, f'models/{stage_1_name.replace(" ", "_").lower()}_to_{stage_2_name.replace(" ", "_").lower()}_model.pkl')
+
+    # Append the model names and accuracy to the list
+    model_accuracies.append((f'{stage_1_name} to {stage_2_name}', accuracy))
+
+# Write the model accuracies to a CSV file
+with open('results/model_accuracies.csv', 'w', newline='') as csvfile:
+    writer = csv.writer(csvfile)
+    writer.writerow(['Model Name', 'Accuracy'])
+    writer.writerows(model_accuracies)
