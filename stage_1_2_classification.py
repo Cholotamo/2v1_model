@@ -11,13 +11,21 @@ import joblib
 import itertools
 import csv
 
-# Define models
-models = {
-    "Random Forest": RandomForestClassifier(n_estimators=100, random_state=42),
-    "Logistic Regression": LogisticRegression(max_iter=1000),
-    "Support Vector Machine (SVM)": SVC(kernel="rbf"),
-    "Naive Bayes": GaussianNB(),
-    "K-Nearest Neighbors (KNN)": KNeighborsClassifier(n_neighbors=5)
+# Load best models for stage 1 and stage 2
+best_models_stage_1 = {
+    "Random Forest": joblib.load('best_models/stage_1_random_forest_best_model.pkl'),
+    "Logistic Regression": joblib.load('best_models/stage_1_logistic_regression_best_model.pkl'),
+    "Support Vector Machine (SVM)": joblib.load('best_models/stage_1_support_vector_machine_(svm)_best_model.pkl'),
+    "Naive Bayes": joblib.load('best_models/stage_1_naive_bayes_best_model.pkl'),
+    "K-Nearest Neighbors (KNN)": joblib.load('best_models/stage_1_k-nearest_neighbors_(knn)_best_model.pkl')
+}
+
+best_models_stage_2 = {
+    "Random Forest": joblib.load('best_models/stage_2_random_forest_best_model.pkl'),
+    "Logistic Regression": joblib.load('best_models/stage_2_logistic_regression_best_model.pkl'),
+    "Support Vector Machine (SVM)": joblib.load('best_models/stage_2_support_vector_machine_(svm)_best_model.pkl'),
+    "Naive Bayes": joblib.load('best_models/stage_2_naive_bayes_best_model.pkl'),
+    "K-Nearest Neighbors (KNN)": joblib.load('best_models/stage_2_k-nearest_neighbors_(knn)_best_model.pkl')
 }
 
 # Load stage 1 features and labels
@@ -38,7 +46,7 @@ y_stage_2 = np.where(y_stage_2 == 'healthy', 2, 1)  # 2 for healthy, 1 for sick
 model_accuracies = []
 
 # Iterate through all permutations of models for stage 1 and stage 2
-for (stage_1_name, stage_1_model), (stage_2_name, stage_2_model) in itertools.product(models.items(), repeat=2):
+for (stage_1_name, stage_1_model), (stage_2_name, stage_2_model) in itertools.product(best_models_stage_1.items(), best_models_stage_2.items()):
     print(f"Training {stage_1_name} for stage 1 and {stage_2_name} for stage 2")
 
     # Clone the models to ensure a fresh instance for each iteration
