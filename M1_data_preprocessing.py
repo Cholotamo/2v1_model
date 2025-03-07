@@ -29,14 +29,14 @@ for file_name in os.listdir(healthy_chicken_dir):
     features = extract_features(file_path)
     if features is not None:
         X_stage_1.append(features)
-        y_stage_1.append('chicken')
+        y_stage_1.append('healthy')
 
 for file_name in os.listdir(sick_chicken_dir):
     file_path = os.path.join(sick_chicken_dir, file_name)
     features = extract_features(file_path)
     if features is not None:
         X_stage_1.append(features)
-        y_stage_1.append('chicken')
+        y_stage_1.append('sick')
 
 for file_name in os.listdir(noise_dir):
     file_path = os.path.join(noise_dir, file_name)
@@ -54,35 +54,5 @@ scaler_1 = StandardScaler()
 X_stage_1 = scaler_1.fit_transform(X_stage_1)
 
 # Save features and labels for stage 1 classification: chicken vs noise
-np.save('stage_1_features.npy', X_stage_1)
-np.save('stage_1_labels.npy', y_stage_1)
-
-# Extract features and labels for stage 2 classification: healthy vs sick
-X_stage_2 = []
-y_stage_2 = []
-
-for file_name in os.listdir(healthy_chicken_dir):
-    file_path = os.path.join(healthy_chicken_dir, file_name)
-    features = extract_features(file_path)
-    if features is not None:
-        X_stage_2.append(features)
-        y_stage_2.append('healthy')
-
-for file_name in os.listdir(sick_chicken_dir):
-    file_path = os.path.join(sick_chicken_dir, file_name)
-    features = extract_features(file_path)
-    if features is not None:
-        X_stage_2.append(features)
-        y_stage_2.append('sick')
-
-# Convert to numpy arrays
-X_stage_2 = np.array(X_stage_2)
-y_stage_2 = np.array(y_stage_2)
-
-# Normalize the features
-scaler_2 = StandardScaler()
-X_stage_2 = scaler_2.fit_transform(X_stage_2)
-
-# Save features and labels for stage 2 classification: healthy vs sick
-np.save('stage_2_features.npy', X_stage_2)
-np.save('stage_2_labels.npy', y_stage_2)
+np.save('M1_features.npy', X_stage_1)
+np.save('M1_labels.npy', y_stage_1)

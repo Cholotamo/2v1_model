@@ -35,15 +35,15 @@ models = {
 }
 
 # Load stage 1 features and labels
-X_stage_1 = np.load('stage_1_features.npy')
-y_stage_1 = np.load('stage_1_labels.npy')
+X_stage_1 = np.load('M2_stage_1_features.npy')
+y_stage_1 = np.load('M2_stage_1_labels.npy')
 
 # Encode stage 1 labels
 y_stage_1 = np.where(y_stage_1 == 'chicken', 1, 0)
 
 # Load stage 2 features and labels
-X_stage_2 = np.load('stage_2_features.npy')
-y_stage_2 = np.load('stage_2_labels.npy')
+X_stage_2 = np.load('M2_stage_2_features.npy')
+y_stage_2 = np.load('M2_stage_2_labels.npy')
 
 # Encode stage 2 labels
 y_stage_2 = np.where(y_stage_2 == 'healthy', 2, 1)  # 2 for healthy, 1 for sick
@@ -109,7 +109,7 @@ for (stage_1_name, (stage_1_model, stage_1_params)), (stage_2_name, (stage_2_mod
     model_accuracies.append((f'{stage_1_name} to {stage_2_name}', accuracy))
 
 # Write the model accuracies to a CSV file
-with open('results/model_accuracies.csv', 'w', newline='') as csvfile:
+with open('results/M2_model_accuracies.csv', 'w', newline='') as csvfile:
     writer = csv.writer(csvfile)
     writer.writerow(['Model Name', 'Accuracy'])
     writer.writerows(model_accuracies)
