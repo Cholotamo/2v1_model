@@ -67,6 +67,9 @@ for (stage_1_name, (stage_1_model, stage_1_params)), (stage_2_name, (stage_2_mod
     grid_search_stage_1.fit(X_train_stage_1, y_train_stage_1)
     best_stage_1_model = grid_search_stage_1.best_estimator_
 
+    # train stage 1 model
+    best_stage_1_model.fit(X_train_stage_1, y_train_stage_1)
+
     # Use the best stage 1 model to predict labels for stage 2 data
     stage_1_predictions = best_stage_1_model.predict(X_stage_2)
 
