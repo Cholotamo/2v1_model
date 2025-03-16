@@ -16,9 +16,9 @@ def extract_features(file_path, n_mfcc=13):
         return None
 
 # Paths to your audio files
-healthy_chicken_dir = 'dataset/healthy'
-sick_chicken_dir = 'dataset/sick'
-noise_dir = 'dataset/none'
+healthy_chicken_dir = 'dataset/Healthy'
+sick_chicken_dir = 'dataset/Sick'
+noise_dir = 'dataset/None'
 
 # Extract features and labels for stage 1 classification: chicken vs noise
 X_stage_1 = []

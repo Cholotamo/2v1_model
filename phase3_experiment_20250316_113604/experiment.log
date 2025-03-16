@@ -1,0 +1,154 @@
+2025-03-16 11:36:04,116 - INFO - Starting Phase 3 experiment
+2025-03-16 11:36:04,116 - INFO - Step 1: Preparing dataset
+2025-03-16 11:36:04,116 - INFO - Processing healthy chicken audio files...
+2025-03-16 11:53:32,946 - INFO - Processing sick chicken audio files...
+2025-03-16 11:57:13,579 - INFO - Processing noise audio files...
+2025-03-16 12:01:36,075 - INFO - Applying SMOTE for class balancing...
+2025-03-16 12:01:36,081 - INFO - Dataset prepared: 42000 samples with 24 features per sample
+2025-03-16 12:01:36,262 - INFO - Checkpoint saved: dataset
+2025-03-16 12:01:36,262 - INFO - Step 2: Performing feature selection analysis
+2025-03-16 12:01:36,262 - INFO - Performing feature selection analysis...
+2025-03-16 12:01:36,262 - INFO - Calculating feature importance with Extra Trees...
+2025-03-16 12:01:38,829 - INFO - Running Recursive Feature Elimination...
+2025-03-16 12:54:37,693 - INFO - RFECV selected 24 features
+2025-03-16 12:54:37,693 - INFO - Calculating mutual information...
+2025-03-16 12:54:39,760 - INFO - Running PCA...
+2025-03-16 12:54:39,804 - INFO - PCA selected 5 components
+2025-03-16 12:54:39,804 - INFO - Checkpoint saved: feature_selection
+2025-03-16 12:54:39,818 - INFO - Step 3: Training and evaluating models
+2025-03-16 12:54:39,833 - INFO - Training SVM with all_features...
+2025-03-16 13:22:06,480 - INFO - Checkpoint saved: model_SVM_all_features
+2025-03-16 13:22:06,481 - INFO - Results for SVM with all_features:
+2025-03-16 13:22:06,481 - INFO -   Train Accuracy: 0.9761
+2025-03-16 13:22:06,481 - INFO -   Test Accuracy: 0.9081
+2025-03-16 13:22:06,481 - INFO -   F1 Score: 0.9083
+2025-03-16 13:22:06,481 - INFO -   Overfitting Gap: 0.0680
+2025-03-16 13:22:11,749 - INFO - Training SVM with rfecv...
+2025-03-16 13:49:26,890 - INFO - Checkpoint saved: model_SVM_rfecv
+2025-03-16 13:49:26,891 - INFO - Results for SVM with rfecv:
+2025-03-16 13:49:26,891 - INFO -   Train Accuracy: 0.9761
+2025-03-16 13:49:26,891 - INFO -   Test Accuracy: 0.9081
+2025-03-16 13:49:26,891 - INFO -   F1 Score: 0.9083
+2025-03-16 13:49:26,891 - INFO -   Overfitting Gap: 0.0680
+2025-03-16 13:49:32,206 - INFO - Training SVM with mutual_info...
+2025-03-16 15:48:43,684 - INFO - Checkpoint saved: model_SVM_mutual_info
+2025-03-16 15:48:43,685 - INFO - Results for SVM with mutual_info:
+2025-03-16 15:48:43,685 - INFO -   Train Accuracy: 0.9509
+2025-03-16 15:48:43,685 - INFO -   Test Accuracy: 0.8930
+2025-03-16 15:48:43,685 - INFO -   F1 Score: 0.8929
+2025-03-16 15:48:43,685 - INFO -   Overfitting Gap: 0.0579
+2025-03-16 15:48:47,852 - INFO - Training SVM with pca...
+2025-03-16 17:20:20,012 - INFO - Checkpoint saved: model_SVM_pca
+2025-03-16 17:20:20,013 - INFO - Results for SVM with pca:
+2025-03-16 17:20:20,013 - INFO -   Train Accuracy: 0.7428
+2025-03-16 17:20:20,013 - INFO -   Test Accuracy: 0.7219
+2025-03-16 17:20:20,013 - INFO -   F1 Score: 0.7194
+2025-03-16 17:20:20,013 - INFO -   Overfitting Gap: 0.0209
+2025-03-16 17:20:25,494 - INFO - Training Extra_Trees with all_features...
+2025-03-16 17:30:10,228 - INFO - Checkpoint saved: model_Extra_Trees_all_features
+2025-03-16 17:30:10,229 - INFO - Results for Extra_Trees with all_features:
+2025-03-16 17:30:10,229 - INFO -   Train Accuracy: 1.0000
+2025-03-16 17:30:10,229 - INFO -   Test Accuracy: 0.9158
+2025-03-16 17:30:10,229 - INFO -   F1 Score: 0.9156
+2025-03-16 17:30:10,229 - INFO -   Overfitting Gap: 0.0842
+2025-03-16 17:30:11,156 - INFO - Training Extra_Trees with rfecv...
+2025-03-16 17:40:10,812 - INFO - Checkpoint saved: model_Extra_Trees_rfecv
+2025-03-16 17:40:10,812 - INFO - Results for Extra_Trees with rfecv:
+2025-03-16 17:40:10,812 - INFO -   Train Accuracy: 1.0000
+2025-03-16 17:40:10,812 - INFO -   Test Accuracy: 0.9158
+2025-03-16 17:40:10,812 - INFO -   F1 Score: 0.9156
+2025-03-16 17:40:10,812 - INFO -   Overfitting Gap: 0.0842
+2025-03-16 17:40:11,727 - INFO - Training Extra_Trees with mutual_info...
+2025-03-16 17:48:44,349 - INFO - Checkpoint saved: model_Extra_Trees_mutual_info
+2025-03-16 17:48:44,349 - INFO - Results for Extra_Trees with mutual_info:
+2025-03-16 17:48:44,349 - INFO -   Train Accuracy: 1.0000
+2025-03-16 17:48:44,350 - INFO -   Test Accuracy: 0.9170
+2025-03-16 17:48:44,350 - INFO -   F1 Score: 0.9169
+2025-03-16 17:48:44,350 - INFO -   Overfitting Gap: 0.0830
+2025-03-16 17:48:45,241 - INFO - Training Extra_Trees with pca...
+2025-03-16 17:56:06,636 - INFO - Checkpoint saved: model_Extra_Trees_pca
+2025-03-16 17:56:06,637 - INFO - Results for Extra_Trees with pca:
+2025-03-16 17:56:06,637 - INFO -   Train Accuracy: 1.0000
+2025-03-16 17:56:06,637 - INFO -   Test Accuracy: 0.8749
+2025-03-16 17:56:06,637 - INFO -   F1 Score: 0.8747
+2025-03-16 17:56:06,637 - INFO -   Overfitting Gap: 0.1251
+2025-03-16 17:56:07,477 - INFO - Checkpoint saved: model_evaluation
+2025-03-16 17:56:07,508 - INFO - Step 4: Training ensemble models
+2025-03-16 17:56:07,508 - INFO - Training ensemble models...
+2025-03-16 17:56:07,517 - INFO - Best SVM method: all_features, Best Extra Trees method: mutual_info
+2025-03-16 17:56:07,983 - INFO - Checkpoint loaded: feature_selection
+2025-03-16 17:56:08,031 - INFO - Training individual models for ensemble...
+2025-03-16 17:58:55,803 - INFO - Optimizing ensemble weights...
+2025-03-16 17:58:59,784 - INFO -   SVM weight: 0.1, ET weight: 0.9, Val accuracy: 0.9098
+2025-03-16 17:58:59,784 - INFO -   SVM weight: 0.2, ET weight: 0.8, Val accuracy: 0.9143
+2025-03-16 17:58:59,784 - INFO -   SVM weight: 0.3, ET weight: 0.7, Val accuracy: 0.9138
+2025-03-16 17:58:59,785 - INFO -   SVM weight: 0.4, ET weight: 0.6, Val accuracy: 0.9117
+2025-03-16 17:58:59,785 - INFO -   SVM weight: 0.5, ET weight: 0.5, Val accuracy: 0.9102
+2025-03-16 17:58:59,786 - INFO -   SVM weight: 0.6, ET weight: 0.4, Val accuracy: 0.9098
+2025-03-16 17:58:59,786 - INFO -   SVM weight: 0.7, ET weight: 0.3, Val accuracy: 0.9070
+2025-03-16 17:58:59,786 - INFO -   SVM weight: 0.8, ET weight: 0.2, Val accuracy: 0.9024
+2025-03-16 17:58:59,786 - INFO -   SVM weight: 0.9, ET weight: 0.1, Val accuracy: 0.9008
+2025-03-16 17:58:59,787 - INFO - Optimal weights: SVM: 0.20, Extra Trees: 0.80
+2025-03-16 17:58:59,787 - INFO - Validating ensemble with cross-validation...
+2025-03-16 20:01:54,556 - INFO - Ensemble cross-validation accuracy: 0.9255 ± 0.0033
+2025-03-16 20:02:24,175 - INFO - Accuracy on uncertain predictions (models disagree): 0.6044
+2025-03-16 20:02:24,175 - INFO - Percentage of uncertain predictions: 8.7%
+2025-03-16 20:02:24,258 - INFO - Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+2025-03-16 20:02:24,262 - INFO - Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+2025-03-16 20:02:24,297 - INFO - Results for Ensemble model:
+2025-03-16 20:02:24,298 - INFO -   Train Accuracy: 1.0000
+2025-03-16 20:02:24,298 - INFO -   Test Accuracy: 0.9190
+2025-03-16 20:02:24,298 - INFO -   F1 Score: 0.9189
+2025-03-16 20:02:24,298 - INFO -   CV Accuracy: 0.9255 ± 0.0033
+2025-03-16 20:02:24,298 - INFO -   Overfitting Gap: 0.0810
+2025-03-16 20:02:24,650 - INFO - Checkpoint saved: ensemble
+2025-03-16 20:02:24,709 - INFO - Step 5: Performing final evaluation
+2025-03-16 20:02:24,709 - INFO - Checkpoint loaded: ensemble
+2025-03-16 20:02:24,714 - INFO - Best model: 0         SVM
+0    Ensemble
+Name: Model, dtype: object with 0                       all_features
+0    SVM:all_features,ET:mutual_info
+Name: Feature Selection, dtype: object features
+2025-03-16 20:02:24,715 - ERROR - Error in final model evaluation: unsupported format string passed to Series.__format__
+2025-03-16 20:02:24,717 - ERROR - Traceback (most recent call last):
+  File "/Users/julian/Desktop/Developer/2v1_model/phase3_experiment.py", line 949, in final_model_evaluation
+    f.write(f"- **Test Accuracy**: {best_model_row['Test Accuracy']:.4f}\n")
+                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: unsupported format string passed to Series.__format__
+
+2025-03-16 20:02:24,718 - INFO - Phase 3 experiment completed successfully. Results saved to phase3_experiment_20250316_113604
+2025-03-16 20:53:43,641 - INFO - Starting rerun using existing checkpoints
+2025-03-16 20:53:43,641 - INFO - Step 1: Loading dataset
+2025-03-16 20:53:43,644 - INFO - Checkpoint loaded: dataset
+2025-03-16 20:53:43,644 - INFO - Step 2: Loading feature selection analysis
+2025-03-16 20:53:43,689 - INFO - Checkpoint loaded: feature_selection
+2025-03-16 20:53:43,689 - INFO - Step 3: Loading model evaluation results
+2025-03-16 20:53:43,690 - INFO - Checkpoint loaded: model_evaluation
+2025-03-16 20:53:43,690 - INFO - Step 4: Loading ensemble results
+2025-03-16 20:53:43,690 - INFO - Checkpoint loaded: ensemble
+2025-03-16 20:53:43,690 - INFO - Ensemble results loaded and will be included in final evaluation
+2025-03-16 20:53:43,690 - INFO - Step 5: Performing final evaluation
+2025-03-16 20:53:43,690 - INFO - Checkpoint loaded: ensemble
+2025-03-16 20:53:43,692 - INFO - Best model: 0         SVM
+0    Ensemble
+Name: Model, dtype: object with 0                       all_features
+0    SVM:all_features,ET:mutual_info
+Name: Feature Selection, dtype: object features
+2025-03-16 20:53:43,692 - ERROR - Error in final model evaluation: cannot convert the series to <class 'float'>
+2025-03-16 20:53:43,692 - ERROR - Unhandled exception in main: name 'traceback' is not defined
+2025-03-16 20:56:31,931 - INFO - Starting rerun using existing checkpoints
+2025-03-16 20:56:31,932 - INFO - Step 1: Loading dataset
+2025-03-16 20:56:31,935 - INFO - Checkpoint loaded: dataset
+2025-03-16 20:56:31,935 - INFO - Step 2: Loading feature selection analysis
+2025-03-16 20:56:31,971 - INFO - Checkpoint loaded: feature_selection
+2025-03-16 20:56:31,971 - INFO - Step 3: Loading model evaluation results
+2025-03-16 20:56:31,972 - INFO - Checkpoint loaded: model_evaluation
+2025-03-16 20:56:31,972 - INFO - Step 4: Loading ensemble results
+2025-03-16 20:56:31,972 - INFO - Checkpoint loaded: ensemble
+2025-03-16 20:56:31,972 - INFO - Ensemble results loaded and will be included in final evaluation
+2025-03-16 20:56:31,972 - INFO - Step 5: Performing final evaluation
+2025-03-16 20:56:31,972 - INFO - Checkpoint loaded: ensemble
+2025-03-16 20:56:31,974 - INFO - Best model: Ensemble with SVM:all_features,ET:mutual_info features
+2025-03-16 20:56:32,187 - INFO - Final report generated.
+2025-03-16 20:56:32,187 - INFO - Checkpoint saved: final_evaluation
+2025-03-16 20:56:32,187 - INFO - Rerun completed successfully. Results updated in /Users/julian/Desktop/Developer/2v1_model/phase3_experiment_20250316_113604
