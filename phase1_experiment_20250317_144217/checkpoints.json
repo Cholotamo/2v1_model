@@ -1,0 +1,222 @@
+{
+    "Support Vector Machine (SVM)_1v1v1": {
+        "Model": "Support Vector Machine (SVM)",
+        "Approach": "1v1v1",
+        "Train Accuracy": 0.8641666666666666,
+        "Test Accuracy": 0.8241666666666667,
+        "F1 Score": 0.8231039171243344,
+        "CV Mean": 0.8121666666666666,
+        "CV Std": 0.011113055385446432,
+        "Overfitting Gap": 0.039999999999999925,
+        "Best Parameters": "{'C': 10, 'gamma': 'auto', 'kernel': 'rbf'}"
+    },
+    "Extra Trees_1v1v1": {
+        "Model": "Extra Trees",
+        "Approach": "1v1v1",
+        "Train Accuracy": 1.0,
+        "Test Accuracy": 0.8225,
+        "F1 Score": 0.8217663455055828,
+        "CV Mean": 0.8115,
+        "CV Std": 0.011123049142309067,
+        "Overfitting Gap": 0.1775,
+        "Best Parameters": "{'max_depth': None, 'min_samples_split': 2, 'n_estimators': 100}"
+    },
+    "XGBoost_1v1v1": {
+        "Model": "XGBoost",
+        "Approach": "1v1v1",
+        "Train Accuracy": 0.9991666666666666,
+        "Test Accuracy": 0.8066666666666666,
+        "F1 Score": 0.8057827222202938,
+        "CV Mean": 0.7956666666666667,
+        "CV Std": 0.0172272394125634,
+        "Overfitting Gap": 0.1925,
+        "Best Parameters": "{'learning_rate': 0.1, 'max_depth': 7, 'n_estimators': 200}"
+    },
+    "Random Forest_1v1v1": {
+        "Model": "Random Forest",
+        "Approach": "1v1v1",
+        "Train Accuracy": 0.99875,
+        "Test Accuracy": 0.8075,
+        "F1 Score": 0.8063834308580313,
+        "CV Mean": 0.7976666666666666,
+        "CV Std": 0.017727881367432984,
+        "Overfitting Gap": 0.19125000000000003,
+        "Best Parameters": "{'max_depth': 20, 'min_samples_split': 2, 'n_estimators': 200}"
+    },
+    "Logistic Regression_1v1v1": {
+        "Model": "Logistic Regression",
+        "Approach": "1v1v1",
+        "Train Accuracy": 0.641875,
+        "Test Accuracy": 0.65,
+        "F1 Score": 0.641410833614129,
+        "CV Mean": 0.6341666666666667,
+        "CV Std": 0.018280226110928333,
+        "Overfitting Gap": -0.008125000000000049,
+        "Best Parameters": "{'C': 1, 'solver': 'liblinear'}"
+    },
+    "Naive Bayes_1v1v1": {
+        "Model": "Naive Bayes",
+        "Approach": "1v1v1",
+        "Train Accuracy": 0.5889583333333334,
+        "Test Accuracy": 0.6241666666666666,
+        "F1 Score": 0.6089542542780445,
+        "CV Mean": 0.5958333333333333,
+        "CV Std": 0.011042845848984977,
+        "Overfitting Gap": -0.035208333333333286,
+        "Best Parameters": "{'var_smoothing': 1e-09}"
+    },
+    "K-Nearest Neighbors (KNN)_1v1v1": {
+        "Model": "K-Nearest Neighbors (KNN)",
+        "Approach": "1v1v1",
+        "Train Accuracy": 1.0,
+        "Test Accuracy": 0.815,
+        "F1 Score": 0.8144333807738574,
+        "CV Mean": 0.8093333333333333,
+        "CV Std": 0.01235358697347095,
+        "Overfitting Gap": 0.18500000000000005,
+        "Best Parameters": "{'n_neighbors': 5, 'weights': 'distance'}"
+    },
+    "Decision Tree_1v1v1": {
+        "Model": "Decision Tree",
+        "Approach": "1v1v1",
+        "Train Accuracy": 0.8454166666666667,
+        "Test Accuracy": 0.7275,
+        "F1 Score": 0.7262746070832431,
+        "CV Mean": 0.7138333333333333,
+        "CV Std": 0.015675529408036668,
+        "Overfitting Gap": 0.11791666666666667,
+        "Best Parameters": "{'criterion': 'gini', 'max_depth': 10, 'min_samples_split': 2}"
+    },
+    "Gradient Boosting_1v1v1": {
+        "Model": "Gradient Boosting",
+        "Approach": "1v1v1",
+        "Train Accuracy": 1.0,
+        "Test Accuracy": 0.795,
+        "F1 Score": 0.794640336178613,
+        "CV Mean": 0.7928333333333333,
+        "CV Std": 0.015152924176907593,
+        "Overfitting Gap": 0.20499999999999996,
+        "Best Parameters": "{'learning_rate': 0.2, 'max_depth': 7, 'n_estimators': 200}"
+    },
+    "AdaBoost_1v1v1": {
+        "Model": "AdaBoost",
+        "Approach": "1v1v1",
+        "Train Accuracy": 0.6704166666666667,
+        "Test Accuracy": 0.6625,
+        "F1 Score": 0.6600392899605498,
+        "CV Mean": 0.6503333333333333,
+        "CV Std": 0.02767168629162709,
+        "Overfitting Gap": 0.007916666666666683,
+        "Best Parameters": "{'learning_rate': 1.0, 'n_estimators': 200}"
+    },
+    "Support Vector Machine (SVM)_Two-Tier": {
+        "Model": "Support Vector Machine (SVM)",
+        "Approach": "Two-Tier",
+        "Train Accuracy": 0.86375,
+        "Test Accuracy": 0.8183333333333334,
+        "F1 Score": 0.8175179443836159,
+        "CV Mean": 0.8123333333333334,
+        "CV Std": 0.012465507967543416,
+        "Overfitting Gap": 0.04541666666666666,
+        "Best Parameters": "Tier 1: {'C': 10, 'gamma': 'scale', 'kernel': 'rbf'}, Tier 2: {'C': 10, 'gamma': 'scale', 'kernel': 'rbf'}"
+    },
+    "Extra Trees_Two-Tier": {
+        "Model": "Extra Trees",
+        "Approach": "Two-Tier",
+        "Train Accuracy": 0.9997916666666666,
+        "Test Accuracy": 0.8125,
+        "F1 Score": 0.8119508128821098,
+        "CV Mean": 0.8018333333333333,
+        "CV Std": 0.012353586973470963,
+        "Overfitting Gap": 0.18729166666666663,
+        "Best Parameters": "Tier 1: {'max_depth': 30, 'min_samples_split': 5, 'n_estimators': 100}, Tier 2: {'max_depth': None, 'min_samples_split': 2, 'n_estimators': 200}"
+    },
+    "XGBoost_Two-Tier": {
+        "Model": "XGBoost",
+        "Approach": "Two-Tier",
+        "Train Accuracy": 0.9720833333333333,
+        "Test Accuracy": 0.8,
+        "F1 Score": 0.7996465243147206,
+        "CV Mean": 0.7870000000000001,
+        "CV Std": 0.008055363982396377,
+        "Overfitting Gap": 0.17208333333333325,
+        "Best Parameters": "Tier 1: {'learning_rate': 0.1, 'max_depth': 7, 'n_estimators': 100}, Tier 2: {'learning_rate': 0.1, 'max_depth': 7, 'n_estimators': 100}"
+    },
+    "Random Forest_Two-Tier": {
+        "Model": "Random Forest",
+        "Approach": "Two-Tier",
+        "Train Accuracy": 1.0,
+        "Test Accuracy": 0.8058333333333333,
+        "F1 Score": 0.8057981439080475,
+        "CV Mean": 0.7966666666666666,
+        "CV Std": 0.011377365443917346,
+        "Overfitting Gap": 0.1941666666666667,
+        "Best Parameters": "Tier 1: {'max_depth': 20, 'min_samples_split': 2, 'n_estimators': 200}, Tier 2: {'max_depth': 20, 'min_samples_split': 2, 'n_estimators': 200}"
+    },
+    "Logistic Regression_Two-Tier": {
+        "Model": "Logistic Regression",
+        "Approach": "Two-Tier",
+        "Train Accuracy": 0.6214583333333333,
+        "Test Accuracy": 0.6133333333333333,
+        "F1 Score": 0.6098964107828881,
+        "CV Mean": 0.6178333333333333,
+        "CV Std": 0.010063686092967004,
+        "Overfitting Gap": 0.008125000000000049,
+        "Best Parameters": "Tier 1: {'C': 0.1, 'solver': 'lbfgs'}, Tier 2: {'C': 10, 'solver': 'liblinear'}"
+    },
+    "Naive Bayes_Two-Tier": {
+        "Model": "Naive Bayes",
+        "Approach": "Two-Tier",
+        "Train Accuracy": 0.5514583333333334,
+        "Test Accuracy": 0.5766666666666667,
+        "F1 Score": 0.558519321328857,
+        "CV Mean": 0.5583333333333333,
+        "CV Std": 0.018693433190413253,
+        "Overfitting Gap": -0.025208333333333277,
+        "Best Parameters": "Tier 1: {'var_smoothing': 1e-09}, Tier 2: {'var_smoothing': 1e-09}"
+    },
+    "K-Nearest Neighbors (KNN)_Two-Tier": {
+        "Model": "K-Nearest Neighbors (KNN)",
+        "Approach": "Two-Tier",
+        "Train Accuracy": 1.0,
+        "Test Accuracy": 0.815,
+        "F1 Score": 0.8145115161032453,
+        "CV Mean": 0.8019999999999999,
+        "CV Std": 0.00889131911223278,
+        "Overfitting Gap": 0.18500000000000005,
+        "Best Parameters": "Tier 1: {'n_neighbors': 7, 'weights': 'distance'}, Tier 2: {'n_neighbors': 7, 'weights': 'distance'}"
+    },
+    "Decision Tree_Two-Tier": {
+        "Model": "Decision Tree",
+        "Approach": "Two-Tier",
+        "Train Accuracy": 0.8529166666666667,
+        "Test Accuracy": 0.6966666666666667,
+        "F1 Score": 0.6960616906632976,
+        "CV Mean": 0.707,
+        "CV Std": 0.008376554582086053,
+        "Overfitting Gap": 0.15625,
+        "Best Parameters": "Tier 1: {'criterion': 'entropy', 'max_depth': 10, 'min_samples_split': 10}, Tier 2: {'criterion': 'entropy', 'max_depth': 10, 'min_samples_split': 10}"
+    },
+    "Gradient Boosting_Two-Tier": {
+        "Model": "Gradient Boosting",
+        "Approach": "Two-Tier",
+        "Train Accuracy": 1.0,
+        "Test Accuracy": 0.7883333333333333,
+        "F1 Score": 0.7881456328873552,
+        "CV Mean": 0.7949999999999999,
+        "CV Std": 0.006390096504226926,
+        "Overfitting Gap": 0.21166666666666667,
+        "Best Parameters": "Tier 1: {'learning_rate': 0.1, 'max_depth': 7, 'n_estimators': 200}, Tier 2: {'learning_rate': 0.1, 'max_depth': 7, 'n_estimators': 200}"
+    },
+    "AdaBoost_Two-Tier": {
+        "Model": "AdaBoost",
+        "Approach": "Two-Tier",
+        "Train Accuracy": 0.6860416666666667,
+        "Test Accuracy": 0.67,
+        "F1 Score": 0.668202652776165,
+        "CV Mean": 0.6541666666666667,
+        "CV Std": 0.0060323203569512965,
+        "Overfitting Gap": 0.01604166666666662,
+        "Best Parameters": "Tier 1: {'learning_rate': 1.0, 'n_estimators': 200}, Tier 2: {'learning_rate': 1.0, 'n_estimators': 200}"
+    }
+}
