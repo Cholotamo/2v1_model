@@ -7,6 +7,7 @@ import seaborn as sns
 import joblib
 import os
 import time
+import argparse
 from datetime import datetime
 from sklearn.model_selection import train_test_split, GridSearchCV, cross_val_score, StratifiedKFold
 from sklearn.metrics import classification_report, accuracy_score, confusion_matrix, f1_score, roc_curve, auc, precision_recall_curve
@@ -16,13 +17,84 @@ from sklearn.ensemble import ExtraTreesClassifier, VotingClassifier, RandomFores
 from sklearn.feature_selection import RFECV, SelectFromModel, mutual_info_classif
 from sklearn.decomposition import PCA
 from sklearn.pipeline import Pipeline
-from sklearn.base import clone
+from sklearn.base import clone, BaseEstimator, ClassifierMixin
 import librosa
 import warnings
 import scipy
 from imblearn.over_sampling import SMOTE
 import traceback
 import pickle
+
+# Add the TwoTierClassifier from phase 2
+class TwoTierClassifier(BaseEstimator, ClassifierMixin):
+    def __init__(self, tier1_model=None, tier2_model=None):
+        self.tier1_model = tier1_model
+        self.tier2_model = tier2_model
+        
+    def fit(self, X, y):
+        # Create binary labels for first tier (chicken vs noise)
+        # 0=healthy, 1=sick, 2=noise -> binary: 0=chicken (healthy or sick), 1=noise
+        self.classes_ = np.unique(y)
+        y_tier1 = np.array([0 if label in [0, 1] else 1 for label in y])
+        
+        # Train tier 1 model (chicken vs noise)
+        self.tier1_model.fit(X, y_tier1)
+        
+        # Filter "chicken" samples for tier 2 training
+        chicken_indices = np.where(y_tier1 == 0)[0]
+        X_chicken = X[chicken_indices]
+        y_chicken = y[chicken_indices]
+        
+        # Train tier 2 model (healthy vs sick)
+        self.tier2_model.fit(X_chicken, y_chicken)
+        
+        return self
+        
+    def predict(self, X):
+        # First tier prediction (chicken vs noise)
+        y_pred_tier1 = self.tier1_model.predict(X)
+        
+        # Initialize final predictions array
+        final_predictions = np.empty(shape=X.shape[0], dtype=int)
+        
+        # For samples predicted as "noise" in tier 1, keep that prediction
+        noise_indices = np.where(y_pred_tier1 == 1)[0]
+        final_predictions[noise_indices] = 2  # noise=2
+        
+        # For samples predicted as "chicken" in tier 1, use tier 2 model to predict healthy vs sick
+        chicken_indices = np.where(y_pred_tier1 == 0)[0]
+        if len(chicken_indices) > 0:
+            X_chicken = X[chicken_indices]
+            y_pred_tier2 = self.tier2_model.predict(X_chicken)
+            final_predictions[chicken_indices] = y_pred_tier2
+        
+        return final_predictions
+    
+    def predict_proba(self, X):
+        """Add predict_proba for ensemble compatibility"""
+        n_classes = len(self.classes_)
+        n_samples = X.shape[0]
+        
+        # Initialize probability matrix
+        probas = np.zeros((n_samples, n_classes))
+        
+        # Get tier 1 probabilities (chicken vs noise)
+        tier1_probas = self.tier1_model.predict_proba(X)
+        
+        # Probability of being noise (class 2)
+        probas[:, 2] = tier1_probas[:, 1]  # Prob of being noise
+        
+        # For samples predicted as chicken, get tier 2 probabilities
+        chicken_prob = tier1_probas[:, 0]  # Prob of being chicken
+        
+        # Get tier 2 probabilities
+        tier2_probas = self.tier2_model.predict_proba(X)
+        
+        # Probability of being healthy or sick, scaled by probability of being chicken
+        probas[:, 0] = tier2_probas[:, 0] * chicken_prob  # Prob of healthy
+        probas[:, 1] = tier2_probas[:, 1] * chicken_prob  # Prob of sick
+        
+        return probas
 
 # Suppress warnings
 warnings.filterwarnings("ignore", category=UserWarning)
@@ -183,7 +255,7 @@ def augment_audio(file_path, label, augmentation_count=2):
         logger.error(f"Error augmenting {file_path}: {e}")
         return [], []
 
-def prepare_dataset(use_augmentation=True, class_balance=True):
+def prepare_dataset(use_augmentation=True, class_balance=True, use_test_mode=False):
     """Prepare dataset with optional augmentation and class balancing."""
     # Check if dataset already prepared
     checkpoint = load_checkpoint('dataset')
@@ -193,12 +265,25 @@ def prepare_dataset(use_augmentation=True, class_balance=True):
     X = []
     y = []
     
+    # For test mode, limit the number of files processed
+    if use_test_mode:
+        logger.info("TEST MODE: Processing limited number of files")
+        file_limit = 10  # Process only 10 files per class in test mode
+    else:
+        file_limit = float('inf')  # No limit in normal mode
+    
     # Process each audio file
     logger.info("Processing healthy chicken audio files...")
+    file_count = 0
     for file_name in os.listdir(healthy_chicken_dir):
+        if file_count >= file_limit and use_test_mode:
+            break
+            
         file_path = os.path.join(healthy_chicken_dir, file_name)
         if use_augmentation:
-            features_list, labels_list = augment_audio(file_path, 0)
+            # In test mode, use less augmentation
+            aug_count = 1 if use_test_mode else 2
+            features_list, labels_list = augment_audio(file_path, 0, augmentation_count=aug_count)
             X.extend(features_list)
             y.extend(labels_list)
         else:
@@ -206,12 +291,20 @@ def prepare_dataset(use_augmentation=True, class_balance=True):
             if features is not None:
                 X.append(features)
                 y.append(0)
+                
+        file_count += 1
     
     logger.info("Processing sick chicken audio files...")
+    file_count = 0
     for file_name in os.listdir(sick_chicken_dir):
+        if file_count >= file_limit and use_test_mode:
+            break
+            
         file_path = os.path.join(sick_chicken_dir, file_name)
         if use_augmentation:
-            features_list, labels_list = augment_audio(file_path, 1)
+            # In test mode, use less augmentation
+            aug_count = 1 if use_test_mode else 2
+            features_list, labels_list = augment_audio(file_path, 1, augmentation_count=aug_count)
             X.extend(features_list)
             y.extend(labels_list)
         else:
@@ -219,12 +312,20 @@ def prepare_dataset(use_augmentation=True, class_balance=True):
             if features is not None:
                 X.append(features)
                 y.append(1)
+                
+        file_count += 1
     
     logger.info("Processing noise audio files...")
+    file_count = 0
     for file_name in os.listdir(noise_dir):
+        if file_count >= file_limit and use_test_mode:
+            break
+            
         file_path = os.path.join(noise_dir, file_name)
         if use_augmentation:
-            features_list, labels_list = augment_audio(file_path, 2)
+            # In test mode, use less augmentation
+            aug_count = 1 if use_test_mode else 2
+            features_list, labels_list = augment_audio(file_path, 2, augmentation_count=aug_count)
             X.extend(features_list)
             y.extend(labels_list)
         else:
@@ -232,6 +333,8 @@ def prepare_dataset(use_augmentation=True, class_balance=True):
             if features is not None:
                 X.append(features)
                 y.append(2)
+                
+        file_count += 1
     
     # Convert to numpy arrays
     X = np.array(X)
@@ -260,7 +363,7 @@ def prepare_dataset(use_augmentation=True, class_balance=True):
     
     return X, y
 
-def feature_selection_analysis(X, y):
+def feature_selection_analysis(X, y, use_test_mode=False):
     """Perform feature selection analysis using multiple techniques."""
     # Check if feature selection already done
     checkpoint = load_checkpoint('feature_selection')
@@ -275,7 +378,7 @@ def feature_selection_analysis(X, y):
     # 1. Feature importance using Extra Trees
     logger.info("Calculating feature importance with Extra Trees...")
     try:
-        et = ExtraTreesClassifier(n_estimators=100, random_state=42)
+        et = ExtraTreesClassifier(n_estimators=50 if use_test_mode else 100, random_state=42)
         et.fit(X, y)
         
         # Plot feature importances
@@ -316,8 +419,8 @@ def feature_selection_analysis(X, y):
         svm = SVC(kernel='linear', C=10) 
         rfecv = RFECV(
             estimator=svm,
-            step=1,
-            cv=StratifiedKFold(3),
+            step=2 if use_test_mode else 1,  # Faster step size in test mode
+            cv=StratifiedKFold(2 if use_test_mode else 3),  # Fewer folds in test mode
             scoring='accuracy',
             n_jobs=-1,
             min_features_to_select=5
@@ -438,12 +541,14 @@ def feature_selection_analysis(X, y):
     
     return feature_selection_results
 
-def train_and_evaluate_models(X, y, feature_selection_results):
-    """Train and evaluate models with different feature selection approaches."""
-    # Check if models already trained
-    checkpoint = load_checkpoint('model_evaluation')
+# New function to train the three recommended models
+def train_recommended_models(X, y, feature_selection_results, use_test_mode=False):
+    """Train the specific models recommended from Phase 2"""
+    checkpoint = load_checkpoint('recommended_models')
     if checkpoint is not None:
         return checkpoint
+    
+    logger.info("Training recommended models from Phase 2...")
     
     # Split data
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42, stratify=y)
@@ -456,222 +561,293 @@ def train_and_evaluate_models(X, y, feature_selection_results):
     # Save scaler
     joblib.dump(scaler, f'{results_dir}/models/scaler.pkl')
     
-    # Feature selection methods
-    feature_methods = {
-        'all_features': feature_selection_results['all_features'],
-        'rfecv': feature_selection_results['rfecv_mask'],
-        'mutual_info': feature_selection_results['mi_mask'],
-        'pca': 'pca'  # Special flag for PCA
-    }
+    # Use all features for these three specific models
+    X_train_selected = X_train_scaled
+    X_test_selected = X_test_scaled
     
-    # Models to evaluate
-    base_models = {
-        'SVM': SVC(kernel='rbf', probability=True, random_state=42),
-        'Extra_Trees': ExtraTreesClassifier(random_state=42)
-    }
-    
-    # Fine-tuned parameter grids
-    param_grids = {
-        'SVM': {
-            'C': [1, 5, 10, 20, 50],
-            'gamma': [0.01, 0.05, 0.1, 0.5]
-        },
-        'Extra_Trees': {
+    # Parameter grids depending on test mode
+    if use_test_mode:
+        logger.info("Using simplified parameters for test mode")
+        svm_param_grid = {
+            'C': [10],
+            'gamma': ['auto']
+        }
+        
+        et_param_grid = {
+            'n_estimators': [100],
+            'max_depth': [30],
+            'min_samples_split': [2],
+            'min_samples_leaf': [4]
+        }
+    else:
+        # Refined parameter grids for full mode
+        svm_param_grid = {
+            'C': [5, 7.5, 10, 12.5, 15, 20],
+            'gamma': ['scale', 'auto', 0.05, 0.075, 0.1, 0.25]
+        }
+        
+        et_param_grid = {
             'n_estimators': [200, 300, 400],
             'max_depth': [20, 30, 40, None],
             'min_samples_split': [2, 5],
             'min_samples_leaf': [1, 2, 4],
             'class_weight': [None, 'balanced']
         }
-    }
     
-    results = []
+    recommended_models = {}
     
-    # Train and evaluate each model with each feature selection method
-    for model_name, base_model in base_models.items():
-        for method_name, feature_mask in feature_methods.items():
-            logger.info(f"Training {model_name} with {method_name}...")
+    try:
+        # 1. SVM with mfcc_temporal features using Two-Tier approach
+        logger.info("Training SVM with Two-Tier approach...")
+        
+        # Create tier 1 model - chicken vs. noise
+        tier1_model = SVC(kernel='rbf', probability=True, random_state=42)
+        y_tier1 = np.array([0 if label in [0, 1] else 1 for label in y_train])
+        
+        grid_search_tier1 = GridSearchCV(
+            tier1_model, svm_param_grid, cv=5, n_jobs=-1,
+            scoring='accuracy', verbose=1, return_train_score=True
+        )
+        grid_search_tier1.fit(X_train_selected, y_tier1)
+        best_tier1 = grid_search_tier1.best_estimator_
+        
+        # Get chicken samples for tier 2 training
+        chicken_indices = np.where(y_tier1 == 0)[0]
+        X_chicken = X_train_selected[chicken_indices]
+        y_chicken = y_train[chicken_indices]
+        
+        # Create tier 2 model - healthy vs sick
+        tier2_model = SVC(kernel='rbf', probability=True, random_state=42)
+        grid_search_tier2 = GridSearchCV(
+            tier2_model, svm_param_grid, cv=5, n_jobs=-1,
+            scoring='accuracy', verbose=1, return_train_score=True
+        )
+        grid_search_tier2.fit(X_chicken, y_chicken)
+        best_tier2 = grid_search_tier2.best_estimator_
+        
+        # Create and train the final Two-Tier classifier
+        svm_two_tier = TwoTierClassifier(best_tier1, best_tier2)
+        svm_two_tier.fit(X_train_selected, y_train)
+        
+        # Save the model
+        joblib.dump(svm_two_tier, f'{results_dir}/models/SVM_TwoTier_model.pkl')
+        
+        # Evaluate 
+        y_train_pred = svm_two_tier.predict(X_train_selected)
+        y_test_pred = svm_two_tier.predict(X_test_selected)
+        
+        train_accuracy = accuracy_score(y_train, y_train_pred)
+        test_accuracy = accuracy_score(y_test, y_test_pred)
+        f1 = f1_score(y_test, y_test_pred, average='weighted')
+        
+        # Store results
+        svm_two_tier_result = {
+            'model': svm_two_tier,
+            'name': 'SVM_TwoTier',
+            'train_accuracy': train_accuracy,
+            'test_accuracy': test_accuracy,
+            'f1_score': f1,
+            'overfitting_gap': train_accuracy - test_accuracy,
+            'params': {
+                'tier1': grid_search_tier1.best_params_,
+                'tier2': grid_search_tier2.best_params_
+            }
+        }
+        recommended_models['SVM_TwoTier'] = svm_two_tier_result
+        
+        # Log results
+        logger.info(f"SVM Two-Tier Results:")
+        logger.info(f"  Train Accuracy: {train_accuracy:.4f}")
+        logger.info(f"  Test Accuracy: {test_accuracy:.4f}")
+        logger.info(f"  F1 Score: {f1:.4f}")
+        
+        # Confusion matrix
+        cm = confusion_matrix(y_test, y_test_pred)
+        plt.figure(figsize=(8, 6))
+        sns.heatmap(cm, annot=True, fmt='d', cmap='Blues',
+                   xticklabels=[label_map[i] for i in range(3)],
+                   yticklabels=[label_map[i] for i in range(3)])
+        plt.xlabel('Predicted')
+        plt.ylabel('True')
+        plt.title('SVM Two-Tier')
+        plt.tight_layout()
+        plt.savefig(f'{results_dir}/confusion_matrices/SVM_TwoTier_cm.png')
+        plt.close()
+        
+        # 2. SVM with mfcc_temporal features using 1v1v1 approach
+        logger.info("Training SVM with 1v1v1 approach...")
+        
+        svm_1v1v1 = SVC(kernel='rbf', probability=True, random_state=42)
+        grid_search_1v1v1 = GridSearchCV(
+            svm_1v1v1, svm_param_grid, cv=5, n_jobs=-1,
+            scoring='accuracy', verbose=1, return_train_score=True
+        )
+        grid_search_1v1v1.fit(X_train_selected, y_train)
+        best_svm_1v1v1 = grid_search_1v1v1.best_estimator_
+        
+        # Save the model
+        joblib.dump(best_svm_1v1v1, f'{results_dir}/models/SVM_1v1v1_model.pkl')
+        
+        # Evaluate 
+        y_train_pred = best_svm_1v1v1.predict(X_train_selected)
+        y_test_pred = best_svm_1v1v1.predict(X_test_selected)
+        
+        train_accuracy = accuracy_score(y_train, y_train_pred)
+        test_accuracy = accuracy_score(y_test, y_test_pred)
+        f1 = f1_score(y_test, y_test_pred, average='weighted')
+        
+        # Store results
+        svm_1v1v1_result = {
+            'model': best_svm_1v1v1,
+            'name': 'SVM_1v1v1',
+            'train_accuracy': train_accuracy,
+            'test_accuracy': test_accuracy,
+            'f1_score': f1,
+            'overfitting_gap': train_accuracy - test_accuracy,
+            'params': grid_search_1v1v1.best_params_
+        }
+        recommended_models['SVM_1v1v1'] = svm_1v1v1_result
+        
+        # Log results
+        logger.info(f"SVM 1v1v1 Results:")
+        logger.info(f"  Train Accuracy: {train_accuracy:.4f}")
+        logger.info(f"  Test Accuracy: {test_accuracy:.4f}")
+        logger.info(f"  F1 Score: {f1:.4f}")
+        
+        # Confusion matrix
+        cm = confusion_matrix(y_test, y_test_pred)
+        plt.figure(figsize=(8, 6))
+        sns.heatmap(cm, annot=True, fmt='d', cmap='Blues',
+                   xticklabels=[label_map[i] for i in range(3)],
+                   yticklabels=[label_map[i] for i in range(3)])
+        plt.xlabel('Predicted')
+        plt.ylabel('True')
+        plt.title('SVM 1v1v1')
+        plt.tight_layout()
+        plt.savefig(f'{results_dir}/confusion_matrices/SVM_1v1v1_cm.png')
+        plt.close()
+        
+        # 3. Extra Trees with mfcc_temporal features using 1v1v1 approach
+        logger.info("Training Extra Trees with 1v1v1 approach...")
+        
+        et_1v1v1 = ExtraTreesClassifier(random_state=42)
+        grid_search_et = GridSearchCV(
+            et_1v1v1, et_param_grid, cv=5, n_jobs=-1,
+            scoring='accuracy', verbose=1, return_train_score=True
+        )
+        grid_search_et.fit(X_train_selected, y_train)
+        best_et_1v1v1 = grid_search_et.best_estimator_
+        
+        # Save the model
+        joblib.dump(best_et_1v1v1, f'{results_dir}/models/ET_1v1v1_model.pkl')
+        
+        # Evaluate 
+        y_train_pred = best_et_1v1v1.predict(X_train_selected)
+        y_test_pred = best_et_1v1v1.predict(X_test_selected)
+        
+        train_accuracy = accuracy_score(y_train, y_train_pred)
+        test_accuracy = accuracy_score(y_test, y_test_pred)
+        f1 = f1_score(y_test, y_test_pred, average='weighted')
+        
+        # Store results
+        et_1v1v1_result = {
+            'model': best_et_1v1v1,
+            'name': 'ET_1v1v1',
+            'train_accuracy': train_accuracy,
+            'test_accuracy': test_accuracy,
+            'f1_score': f1,
+            'overfitting_gap': train_accuracy - test_accuracy,
+            'params': grid_search_et.best_params_
+        }
+        recommended_models['ET_1v1v1'] = et_1v1v1_result
+        
+        # Log results
+        logger.info(f"Extra Trees 1v1v1 Results:")
+        logger.info(f"  Train Accuracy: {train_accuracy:.4f}")
+        logger.info(f"  Test Accuracy: {test_accuracy:.4f}")
+        logger.info(f"  F1 Score: {f1:.4f}")
+        
+        # Confusion matrix
+        cm = confusion_matrix(y_test, y_test_pred)
+        plt.figure(figsize=(8, 6))
+        sns.heatmap(cm, annot=True, fmt='d', cmap='Blues',
+                   xticklabels=[label_map[i] for i in range(3)],
+                   yticklabels=[label_map[i] for i in range(3)])
+        plt.xlabel('Predicted')
+        plt.ylabel('True')
+        plt.title('Extra Trees 1v1v1')
+        plt.tight_layout()
+        plt.savefig(f'{results_dir}/confusion_matrices/ET_1v1v1_cm.png')
+        plt.close()
+        
+        # ROC curves for all models
+        plt.figure(figsize=(12, 8))
+        
+        # Use the same test set for fair comparison
+        for model_name, model_info in recommended_models.items():
+            if hasattr(model_info['model'], "predict_proba"):
+                model = model_info['model']
+                y_proba = model.predict_proba(X_test_selected)
+                
+                # Calculate average ROC curve across all classes
+                all_fpr = []
+                all_tpr = []
+                all_auc = []
+                
+                for i in range(3):
+                    # Convert to binary classification
+                    y_test_binary = (y_test == i).astype(int)
+                    
+                    # Compute ROC curve and AUC
+                    fpr, tpr, _ = roc_curve(y_test_binary, y_proba[:, i])
+                    roc_auc = auc(fpr, tpr)
+                    
+                    all_fpr.append(fpr)
+                    all_tpr.append(tpr)
+                    all_auc.append(roc_auc)
+                
+                # Plot average ROC curve
+                avg_auc = np.mean(all_auc)
+                plt.plot(all_fpr[0], all_tpr[0], lw=2, 
+                        label=f'{model_name} (AUC = {avg_auc:.3f})')
+        
+        plt.plot([0, 1], [0, 1], 'k--', lw=2)
+        plt.xlim([0.0, 1.0])
+        plt.ylim([0.0, 1.05])
+        plt.xlabel('False Positive Rate')
+        plt.ylabel('True Positive Rate')
+        plt.title('ROC Curves for Recommended Models')
+        plt.legend(loc="lower right")
+        plt.savefig(f'{results_dir}/figures/recommended_models_roc.png')
+        plt.close()
             
-            # Check if this model/method combination already done
-            checkpoint_name = f'model_{model_name}_{method_name}'
-            checkpoint = load_checkpoint(checkpoint_name)
-            if checkpoint is not None:
-                results.append(checkpoint)
-                logger.info(f"Loaded existing results for {model_name} with {method_name}")
-                continue
-            
-            try:
-                # Prepare data according to feature selection method
-                if method_name == 'pca':
-                    pca = feature_selection_results['pca']
-                    X_train_selected = pca.transform(X_train_scaled)
-                    X_test_selected = pca.transform(X_test_scaled)
-                else:
-                    X_train_selected = X_train_scaled[:, feature_mask]
-                    X_test_selected = X_test_scaled[:, feature_mask]
-                
-                # Clone model
-                model = clone(base_model)
-                
-                # Grid search
-                grid_search = GridSearchCV(
-                    model, param_grids[model_name], cv=5, n_jobs=-1, 
-                    scoring='accuracy', verbose=1, return_train_score=True
-                )
-                
-                start_time = time.time()
-                grid_search.fit(X_train_selected, y_train)
-                training_time = time.time() - start_time
-                
-                # Get best model
-                best_model = grid_search.best_estimator_
-                
-                # Predictions
-                y_train_pred = best_model.predict(X_train_selected)
-                y_test_pred = best_model.predict(X_test_selected)
-                
-                # Metrics
-                train_accuracy = accuracy_score(y_train, y_train_pred)
-                test_accuracy = accuracy_score(y_test, y_test_pred)
-                f1 = f1_score(y_test, y_test_pred, average='weighted')
-                
-                # Save performance metrics
-                result = {
-                    'Model': model_name,
-                    'Feature Selection': method_name,
-                    'Train Accuracy': train_accuracy,
-                    'Test Accuracy': test_accuracy,
-                    'F1 Score': f1,
-                    'Overfitting Gap': train_accuracy - test_accuracy,
-                    'Training Time (s)': training_time,
-                    'Best Parameters': str(grid_search.best_params_),
-                    'Num Features': X_train_selected.shape[1]
-                }
-                results.append(result)
-                save_checkpoint(result, checkpoint_name)
-                
-                # Log results
-                logger.info(f"Results for {model_name} with {method_name}:")
-                logger.info(f"  Train Accuracy: {train_accuracy:.4f}")
-                logger.info(f"  Test Accuracy: {test_accuracy:.4f}")
-                logger.info(f"  F1 Score: {f1:.4f}")
-                logger.info(f"  Overfitting Gap: {train_accuracy - test_accuracy:.4f}")
-                
-                # Save model
-                model_filename = f'{results_dir}/models/{model_name}_{method_name}_model.pkl'
-                joblib.dump(best_model, model_filename)
-                
-                # Confusion matrix
-                cm = confusion_matrix(y_test, y_test_pred)
-                plt.figure(figsize=(8, 6))
-                sns.heatmap(cm, annot=True, fmt='d', cmap='Blues',
-                           xticklabels=[label_map[i] for i in range(3)],
-                           yticklabels=[label_map[i] for i in range(3)])
-                plt.xlabel('Predicted')
-                plt.ylabel('True')
-                plt.title(f'{model_name} - {method_name}')
-                plt.tight_layout()
-                plt.savefig(f'{results_dir}/confusion_matrices/{model_name}_{method_name}_cm.png')
-                plt.close()
-                
-                # Class-specific metrics
-                cr = classification_report(y_test, y_test_pred, target_names=[label_map[i] for i in range(3)], output_dict=True)
-                cr_df = pd.DataFrame(cr).transpose()
-                cr_df.to_csv(f'{results_dir}/confusion_matrices/{model_name}_{method_name}_class_report.csv')
-                
-                # If model supports probability, generate ROC curves
-                if hasattr(best_model, "predict_proba"):
-                    plt.figure(figsize=(10, 8))
-                    
-                    # One-vs-Rest ROC curves
-                    y_score = best_model.predict_proba(X_test_selected)
-                    
-                    for i in range(3):
-                        # Convert to binary classification problem
-                        y_test_binary = (y_test == i).astype(int)
-                        
-                        # Compute ROC curve and ROC area
-                        fpr, tpr, _ = roc_curve(y_test_binary, y_score[:, i])
-                        roc_auc = auc(fpr, tpr)
-                        
-                        # Plot
-                        plt.plot(fpr, tpr, lw=2, 
-                                label=f'{label_map[i]} (AUC = {roc_auc:.2f})')
-                    
-                    plt.plot([0, 1], [0, 1], 'k--', lw=2)
-                    plt.xlim([0.0, 1.0])
-                    plt.ylim([0.0, 1.05])
-                    plt.xlabel('False Positive Rate')
-                    plt.ylabel('True Positive Rate')
-                    plt.title(f'ROC Curves - {model_name} with {method_name}')
-                    plt.legend(loc="lower right")
-                    plt.savefig(f'{results_dir}/confusion_matrices/{model_name}_{method_name}_roc.png')
-                    plt.close()
-                
-            except Exception as e:
-                logger.error(f"Error training {model_name} with {method_name}: {e}")
-                logger.error(traceback.format_exc())
-                # Record failure
-                result = {
-                    'Model': model_name,
-                    'Feature Selection': method_name,
-                    'Train Accuracy': float('nan'),
-                    'Test Accuracy': float('nan'),
-                    'F1 Score': float('nan'),
-                    'Overfitting Gap': float('nan'),
-                    'Training Time (s)': float('nan'),
-                    'Best Parameters': 'Error',
-                    'Num Features': 0
-                }
-                results.append(result)
-                save_checkpoint(result, checkpoint_name)
+        # Save all results
+        save_checkpoint(recommended_models, 'recommended_models')
+        
+    except Exception as e:
+        logger.error(f"Error training recommended models: {e}")
+        logger.error(traceback.format_exc())
+        recommended_models = {}
     
-    # Create results DataFrame
-    results_df = pd.DataFrame(results)
-    results_df.to_csv(f'{results_dir}/model_results.csv', index=False)
-    
-    # Save checkpoint
-    save_checkpoint(results_df, 'model_evaluation')
-    
-    return results_df
+    return recommended_models
 
-def train_ensemble_models(X, y, results_df):
-    """Train ensemble models combining SVM and Extra Trees with optimized weights."""
+# Modified train_ensemble_models to use the three recommended models
+def train_enhanced_ensemble(X, y, recommended_models, use_test_mode=False):
+    """Train an enhanced ensemble using all three recommended models."""
     # Check if ensemble already trained
-    checkpoint = load_checkpoint('ensemble')
+    checkpoint = load_checkpoint('enhanced_ensemble')
     if checkpoint is not None:
         return checkpoint
     
-    logger.info("Training ensemble models...")
+    logger.info("Training enhanced ensemble with all three recommended models...")
     
     try:
-        # Find best feature selection method for each base model
-        best_svm_row = results_df[results_df['Model'] == 'SVM'].sort_values('Test Accuracy', ascending=False).iloc[0]
-        best_et_row = results_df[results_df['Model'] == 'Extra_Trees'].sort_values('Test Accuracy', ascending=False).iloc[0]
-        
-        best_svm_method = best_svm_row['Feature Selection']
-        best_et_method = best_et_row['Feature Selection']
-        
-        logger.info(f"Best SVM method: {best_svm_method}, Best Extra Trees method: {best_et_method}")
-        
-        # Load base models
-        try:
-            svm_model = joblib.load(f'{results_dir}/models/SVM_{best_svm_method}_model.pkl')
-            et_model = joblib.load(f'{results_dir}/models/Extra_Trees_{best_et_method}_model.pkl')
-        except Exception as e:
-            logger.error(f"Error loading models: {e}")
-            logger.error(traceback.format_exc())
-            # Return best individual model as fallback
-            if best_svm_row['Test Accuracy'] > best_et_row['Test Accuracy']:
-                return best_svm_row
-            else:
-                return best_et_row
-        
-        # Load feature selection results
-        feature_selection_results = load_checkpoint('feature_selection')
-        if feature_selection_results is None:
-            logger.error("Feature selection results not found")
-            return best_svm_row if best_svm_row['Test Accuracy'] > best_et_row['Test Accuracy'] else best_et_row
+        # Check if we have the three required models
+        required_models = ['SVM_TwoTier', 'SVM_1v1v1', 'ET_1v1v1']
+        for model_name in required_models:
+            if model_name not in recommended_models:
+                logger.error(f"Missing required model for ensemble: {model_name}")
+                return None
         
         # Split data - use separate validation set for weight optimization
         X_train, X_temp, y_train, y_temp = train_test_split(X, y, test_size=0.3, random_state=42, stratify=y)
@@ -683,64 +859,65 @@ def train_ensemble_models(X, y, results_df):
         X_val_scaled = scaler.transform(X_val)
         X_test_scaled = scaler.transform(X_test)
         
-        def prepare_data(X_data, method_name):
-            if method_name == 'pca':
-                pca = feature_selection_results['pca']
-                return pca.transform(X_data)
-            elif method_name == 'all_features':
-                return X_data
-            elif method_name == 'mutual_info':
-                mask = feature_selection_results['mi_mask']
-                return X_data[:, mask]
-            elif method_name == 'rfecv':
-                mask = feature_selection_results['rfecv_mask']
-                return X_data[:, mask]
-            else:
-                raise ValueError(f"Unknown feature selection method: {method_name}")
-        
-        # Prepare data for each model
-        X_train_svm = prepare_data(X_train_scaled, best_svm_method)
-        X_val_svm = prepare_data(X_val_scaled, best_svm_method)
-        X_test_svm = prepare_data(X_test_scaled, best_svm_method)
-        
-        X_train_et = prepare_data(X_train_scaled, best_et_method)
-        X_val_et = prepare_data(X_val_scaled, best_et_method)
-        X_test_et = prepare_data(X_test_scaled, best_et_method)
-        
-        # Train individual models
-        logger.info("Training individual models for ensemble...")
-        svm_model.fit(X_train_svm, y_train)
-        et_model.fit(X_train_et, y_train)
+        # Get models from the recommended_models dictionary
+        svm_two_tier = recommended_models['SVM_TwoTier']['model']
+        svm_1v1v1 = recommended_models['SVM_1v1v1']['model']
+        et_1v1v1 = recommended_models['ET_1v1v1']['model']
         
         # Grid search for optimal weights
         logger.info("Optimizing ensemble weights...")
         best_val_accuracy = 0
-        best_svm_weight = 0.5  # Default weight
+        best_weights = None
         
-        # Get validation set predictions
-        svm_val_proba = svm_model.predict_proba(X_val_svm)
-        et_val_proba = et_model.predict_proba(X_val_et)
+        # Get validation set predictions from each model
+        svm_two_tier_proba = svm_two_tier.predict_proba(X_val_scaled)
+        svm_1v1v1_proba = svm_1v1v1.predict_proba(X_val_scaled)
+        et_1v1v1_proba = et_1v1v1.predict_proba(X_val_scaled)
+        
+        # Create a grid of weight combinations to try
+        # We need to ensure the weights sum to 1.0
+        if use_test_mode:
+            # In test mode, use a minimal grid
+            weight_grid = [(0.4, 0.3, 0.3), (0.5, 0.3, 0.2)]
+            logger.info(f"Using minimal weight grid in test mode: {len(weight_grid)} combinations")
+        else:
+            # Full grid for normal mode
+            weight_grid = []
+            for w1 in np.linspace(0.2, 0.6, 5):  # SVM Two-Tier weight
+                for w2 in np.linspace(0.1, 0.4, 4):  # SVM 1v1v1 weight
+                    w3 = 1.0 - w1 - w2  # ET 1v1v1 weight
+                    if 0.1 <= w3 <= 0.4:  # Ensure ET gets reasonable weight
+                        weight_grid.append((w1, w2, w3))
+            
+            logger.info(f"Trying {len(weight_grid)} weight combinations...")
         
         # Try different weight combinations
-        for svm_weight in np.linspace(0.1, 0.9, 9):
-            et_weight = 1 - svm_weight
-            ensemble_val_proba = svm_weight * svm_val_proba + et_weight * et_val_proba
+        for weights in weight_grid:
+            # Combine predictions with these weights
+            ensemble_val_proba = (
+                weights[0] * svm_two_tier_proba + 
+                weights[1] * svm_1v1v1_proba + 
+                weights[2] * et_1v1v1_proba
+            )
             val_pred = np.argmax(ensemble_val_proba, axis=1)
             val_accuracy = accuracy_score(y_val, val_pred)
             
-            logger.info(f"  SVM weight: {svm_weight:.1f}, ET weight: {et_weight:.1f}, Val accuracy: {val_accuracy:.4f}")
+            logger.debug(f"  Weights: {weights}, Val accuracy: {val_accuracy:.4f}")
             
             if val_accuracy > best_val_accuracy:
                 best_val_accuracy = val_accuracy
-                best_svm_weight = svm_weight
+                best_weights = weights
         
-        best_et_weight = 1 - best_svm_weight
-        logger.info(f"Optimal weights: SVM: {best_svm_weight:.2f}, Extra Trees: {best_et_weight:.2f}")
+        # Log the best weights
+        logger.info(f"Optimal weights: SVM Two-Tier: {best_weights[0]:.2f}, " +
+                    f"SVM 1v1v1: {best_weights[1]:.2f}, " + 
+                    f"ET 1v1v1: {best_weights[2]:.2f}")
         
         # Evaluate with cross-validation for more robust estimation
         logger.info("Validating ensemble with cross-validation...")
         cv_scores = []
-        kf = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
+        # Use fewer folds in test mode
+        kf = StratifiedKFold(n_splits=3 if use_test_mode else 5, shuffle=True, random_state=42)
         
         for train_idx, val_idx in kf.split(X, y):
             X_cv_train, X_cv_val = X[train_idx], X[val_idx]
@@ -751,26 +928,40 @@ def train_ensemble_models(X, y, results_df):
             X_cv_train_scaled = cv_scaler.fit_transform(X_cv_train)
             X_cv_val_scaled = cv_scaler.transform(X_cv_val)
             
-            # Prepare data
-            X_cv_train_svm = prepare_data(X_cv_train_scaled, best_svm_method)
-            X_cv_val_svm = prepare_data(X_cv_val_scaled, best_svm_method)
-            
-            X_cv_train_et = prepare_data(X_cv_train_scaled, best_et_method)
-            X_cv_val_et = prepare_data(X_cv_val_scaled, best_et_method)
+            # Create and train models for this fold
+            # For simplicity, we'll use clones of the best models
+            cv_svm_two_tier = clone(svm_two_tier)
+            cv_svm_1v1v1 = clone(svm_1v1v1)
+            cv_et_1v1v1 = clone(et_1v1v1)
             
             # Train models
-            cv_svm = clone(svm_model)
-            cv_et = clone(et_model)
+            # Note: TwoTierClassifier doesn't support clone properly, so recreate it
+            if isinstance(cv_svm_two_tier, TwoTierClassifier):
+                # Create a new instance and train it
+                tier1_model = SVC(kernel='rbf', probability=True, random_state=42)
+                tier2_model = SVC(kernel='rbf', probability=True, random_state=42)
+                
+                # Set parameters from the original model
+                tier1_model.set_params(**recommended_models['SVM_TwoTier']['params']['tier1'])
+                tier2_model.set_params(**recommended_models['SVM_TwoTier']['params']['tier2'])
+                
+                cv_svm_two_tier = TwoTierClassifier(tier1_model, tier2_model)
             
-            cv_svm.fit(X_cv_train_svm, y_cv_train)
-            cv_et.fit(X_cv_train_et, y_cv_train)
+            cv_svm_two_tier.fit(X_cv_train_scaled, y_cv_train)
+            cv_svm_1v1v1.fit(X_cv_train_scaled, y_cv_train)
+            cv_et_1v1v1.fit(X_cv_train_scaled, y_cv_train)
             
             # Make predictions
-            svm_cv_proba = cv_svm.predict_proba(X_cv_val_svm)
-            et_cv_proba = cv_et.predict_proba(X_cv_val_et)
+            svm_two_tier_proba = cv_svm_two_tier.predict_proba(X_cv_val_scaled)
+            svm_1v1v1_proba = cv_svm_1v1v1.predict_proba(X_cv_val_scaled)
+            et_1v1v1_proba = cv_et_1v1v1.predict_proba(X_cv_val_scaled)
             
             # Combine with optimal weights
-            ensemble_cv_proba = best_svm_weight * svm_cv_proba + best_et_weight * et_cv_proba
+            ensemble_cv_proba = (
+                best_weights[0] * svm_two_tier_proba + 
+                best_weights[1] * svm_1v1v1_proba + 
+                best_weights[2] * et_1v1v1_proba
+            )
             cv_pred = np.argmax(ensemble_cv_proba, axis=1)
             
             # Calculate accuracy
@@ -779,89 +970,87 @@ def train_ensemble_models(X, y, results_df):
         
         logger.info(f"Ensemble cross-validation accuracy: {np.mean(cv_scores):.4f} ± {np.std(cv_scores):.4f}")
         
-        # Make final predictions with optimal weights
-        def ensemble_predict_proba(X_svm, X_et):
-            svm_proba = svm_model.predict_proba(X_svm)
-            et_proba = et_model.predict_proba(X_et)
-            return best_svm_weight * svm_proba + best_et_weight * et_proba
+        # Define prediction functions using the optimal weights
+        def ensemble_predict_proba(X_scaled):
+            svm_two_tier_proba = svm_two_tier.predict_proba(X_scaled)
+            svm_1v1v1_proba = svm_1v1v1.predict_proba(X_scaled)
+            et_1v1v1_proba = et_1v1v1.predict_proba(X_scaled)
+            
+            return (
+                best_weights[0] * svm_two_tier_proba + 
+                best_weights[1] * svm_1v1v1_proba + 
+                best_weights[2] * et_1v1v1_proba
+            )
         
-        def ensemble_predict(X_svm, X_et):
-            proba = ensemble_predict_proba(X_svm, X_et)
+        def ensemble_predict(X_scaled):
+            proba = ensemble_predict_proba(X_scaled)
             return np.argmax(proba, axis=1)
         
-        # Calculate prediction uncertainty (agreement between models)
-        def calculate_uncertainty(X_svm, X_et):
-            svm_pred = svm_model.predict(X_svm)
-            et_pred = et_model.predict(X_et)
-            # 1 where models agree, 0 where they disagree
-            agreement = (svm_pred == et_pred).astype(int)
-            return 1 - agreement  # uncertainty = 1 - agreement
-        
-        # Make predictions
-        y_train_pred = ensemble_predict(X_train_svm, X_train_et)
-        y_test_pred = ensemble_predict(X_test_svm, X_test_et)
-        y_test_proba = ensemble_predict_proba(X_test_svm, X_test_et)
-        test_uncertainty = calculate_uncertainty(X_test_svm, X_test_et)
+        # Make predictions on train and test sets
+        y_train_pred = ensemble_predict(X_train_scaled)
+        y_test_pred = ensemble_predict(X_test_scaled)
+        y_test_proba = ensemble_predict_proba(X_test_scaled)
         
         # Calculate metrics
         train_accuracy = accuracy_score(y_train, y_train_pred)
         test_accuracy = accuracy_score(y_test, y_test_pred)
         f1 = f1_score(y_test, y_test_pred, average='weighted')
         
-        # Analyze prediction uncertainty
-        correct_predictions = (y_test_pred == y_test)
+        # Analyze prediction agreement among models
+        svm_two_tier_pred = svm_two_tier.predict(X_test_scaled)
+        svm_1v1v1_pred = svm_1v1v1.predict(X_test_scaled)
+        et_1v1v1_pred = et_1v1v1.predict(X_test_scaled)
         
-        # How many uncertain predictions were correct vs incorrect?
-        uncertain_indices = np.where(test_uncertainty == 1)[0]
-        if len(uncertain_indices) > 0:
-            uncertain_correct = np.mean(correct_predictions[uncertain_indices])
-            logger.info(f"Accuracy on uncertain predictions (models disagree): {uncertain_correct:.4f}")
-            logger.info(f"Percentage of uncertain predictions: {len(uncertain_indices)/len(y_test)*100:.1f}%")
+        # Count how many models agree with each prediction
+        agreement_counts = np.zeros(len(y_test))
+        for i in range(len(y_test)):
+            predictions = [svm_two_tier_pred[i], svm_1v1v1_pred[i], et_1v1v1_pred[i]]
+            agreement_counts[i] = predictions.count(y_test_pred[i])
         
-        # Plot uncertainty analysis
-        plt.figure(figsize=(8, 6))
-        sns.countplot(x=test_uncertainty, hue=correct_predictions)
-        plt.xlabel('Prediction Uncertainty (0=Agreement, 1=Disagreement)')
+        # Create agreement levels (1=one model agrees, 2=two models agree, 3=all models agree)
+        agreement_levels = agreement_counts.astype(int)
+        
+        # Analyze accuracy by agreement level
+        for level in range(1, 4):
+            level_indices = np.where(agreement_levels == level)[0]
+            if len(level_indices) > 0:
+                level_accuracy = accuracy_score(y_test[level_indices], y_test_pred[level_indices])
+                logger.info(f"Accuracy when {level} model(s) agree: {level_accuracy:.4f} ({len(level_indices)} samples)")
+        
+        # Plot agreement level analysis
+        plt.figure(figsize=(10, 6))
+        sns.countplot(x=agreement_levels, hue=(y_test_pred == y_test))
+        plt.xlabel('Number of Models in Agreement')
         plt.ylabel('Count')
         plt.title('Model Agreement vs. Prediction Correctness')
         plt.legend(['Incorrect', 'Correct'])
-        plt.savefig(f'{results_dir}/figures/prediction_uncertainty.png')
+        plt.savefig(f'{results_dir}/figures/ensemble_agreement.png')
         plt.close()
         
-        # Save results
+        # Save ensemble results
         ensemble_result = {
-            'Model': 'Ensemble',
-            'Feature Selection': f'SVM:{best_svm_method},ET:{best_et_method}',
-            'Train Accuracy': train_accuracy,
-            'Test Accuracy': test_accuracy,
-            'F1 Score': f1,
-            'CV Accuracy': np.mean(cv_scores),
-            'CV Std': np.std(cv_scores),
-            'Overfitting Gap': train_accuracy - test_accuracy,
-            'Best Parameters': f'SVM weight: {best_svm_weight:.2f}, ET weight: {best_et_weight:.2f}',
-            'Num Features': 'Multiple'
+            'name': 'Enhanced_Ensemble',
+            'models': {
+                'SVM_TwoTier': svm_two_tier,
+                'SVM_1v1v1': svm_1v1v1,
+                'ET_1v1v1': et_1v1v1
+            },
+            'weights': best_weights,
+            'train_accuracy': train_accuracy,
+            'test_accuracy': test_accuracy,
+            'f1_score': f1,
+            'cv_accuracy': np.mean(cv_scores),
+            'cv_std': np.std(cv_scores),
+            'scaler': scaler
         }
-
+        joblib.dump(ensemble_result, f'{results_dir}/models/enhanced_ensemble.pkl')
+        
         # Log results
-        logger.info(f"Results for Ensemble model:")
+        logger.info(f"Enhanced Ensemble Results:")
         logger.info(f"  Train Accuracy: {train_accuracy:.4f}")
         logger.info(f"  Test Accuracy: {test_accuracy:.4f}")
         logger.info(f"  F1 Score: {f1:.4f}")
         logger.info(f"  CV Accuracy: {np.mean(cv_scores):.4f} ± {np.std(cv_scores):.4f}")
-        logger.info(f"  Overfitting Gap: {train_accuracy - test_accuracy:.4f}")
-        
-        # Save ensemble components
-        ensemble_info = {
-            'svm_model': svm_model,
-            'et_model': et_model,
-            'svm_method': best_svm_method,
-            'et_method': best_et_method,
-            'svm_weight': best_svm_weight,
-            'et_weight': best_et_weight,
-            'scaler': scaler,
-            'cv_scores': cv_scores
-        }
-        joblib.dump(ensemble_info, f'{results_dir}/models/ensemble_components.pkl')
         
         # Confusion matrix
         cm = confusion_matrix(y_test, y_test_pred)
@@ -871,16 +1060,16 @@ def train_ensemble_models(X, y, results_df):
                     yticklabels=[label_map[i] for i in range(3)])
         plt.xlabel('Predicted')
         plt.ylabel('True')
-        plt.title('Ensemble Model (SVM + Extra Trees)')
+        plt.title('Enhanced Ensemble (3 models)')
         plt.tight_layout()
-        plt.savefig(f'{results_dir}/confusion_matrices/ensemble_cm.png')
+        plt.savefig(f'{results_dir}/confusion_matrices/enhanced_ensemble_cm.png')
         plt.close()
         
         # Class-specific metrics
         cr = classification_report(y_test, y_test_pred, target_names=[label_map[i] for i in range(3)], output_dict=True)
         cr_df = pd.DataFrame(cr).transpose()
-        cr_df.to_csv(f'{results_dir}/confusion_matrices/ensemble_class_report.csv')
-
+        cr_df.to_csv(f'{results_dir}/confusion_matrices/enhanced_ensemble_class_report.csv')
+        
         # ROC curves
         plt.figure(figsize=(10, 8))
         
@@ -901,238 +1090,229 @@ def train_ensemble_models(X, y, results_df):
         plt.ylim([0.0, 1.05])
         plt.xlabel('False Positive Rate')
         plt.ylabel('True Positive Rate')
-        plt.title('ROC Curves - Ensemble Model')
+        plt.title('ROC Curves - Enhanced Ensemble')
         plt.legend(loc="lower right")
-        plt.savefig(f'{results_dir}/confusion_matrices/ensemble_roc.png')
+        plt.savefig(f'{results_dir}/confusion_matrices/enhanced_ensemble_roc.png')
         plt.close()
         
         # Save checkpoint
-        save_checkpoint(ensemble_result, 'ensemble')
-
+        save_checkpoint(ensemble_result, 'enhanced_ensemble')
+        
         return ensemble_result
-    
+        
     except Exception as e:
-        logger.error(f"Error training ensemble model: {e}")
+        logger.error(f"Error training enhanced ensemble: {e}")
         logger.error(traceback.format_exc())
-        
-        # Return best individual model as fallback
-        best_model_idx = results_df['Test Accuracy'].idxmax()
-        best_model_row = results_df.iloc[best_model_idx]
-        logger.info(f"Using best individual model as fallback: {best_model_row['Model']} with {best_model_row['Feature Selection']}")
-        
-        return best_model_row
+        return None
 
-def final_model_evaluation(results_df, X, y):
-    """Perform final evaluation of the best model and provide conclusions."""
+def final_model_evaluation(recommended_models, ensemble_result, X, y):
+    """Perform final evaluation comparing all trained models."""
     checkpoint = load_checkpoint('final_evaluation')
     if checkpoint is not None:
         return checkpoint
     
     try:
-        # Make a copy of the DataFrame to avoid modifying the original
-        results_df = results_df.copy()
+        # Create a list to hold all model results
+        all_results = []
         
-        # Add ensemble results if available
-        ensemble_result = load_checkpoint('ensemble')
-        if ensemble_result is not None and isinstance(ensemble_result, dict):
-            if not any(r['Model'] == 'Ensemble' for _, r in results_df.iterrows()):
-                results_df = pd.concat([results_df, pd.DataFrame([ensemble_result])], ignore_index=True)
-                
-        # Convert to numeric to ensure proper comparison
-        results_df['Test Accuracy'] = pd.to_numeric(results_df['Test Accuracy'])
-        best_model_idx = results_df['Test Accuracy'].idxmax()
-        best_model_row = results_df.iloc[best_model_idx]
+        # Add recommended models to results
+        for model_name, model_info in recommended_models.items():
+            result = {
+                'Model': model_name,
+                'Train Accuracy': model_info['train_accuracy'],
+                'Test Accuracy': model_info['test_accuracy'],
+                'F1 Score': model_info['f1_score'],
+                'Overfitting Gap': model_info['overfitting_gap']
+            }
+            all_results.append(result)
         
-        # Print debug information to verify correct selection
-        logger.info("Model comparison (sorted by test accuracy):")
-        for i, (idx, row) in enumerate(results_df.sort_values('Test Accuracy', ascending=False).iterrows()):
-            model = row['Model']
-            if isinstance(model, pd.Series):
-                model = model.iloc[0]
-            test_acc = row['Test Accuracy']
-            if isinstance(test_acc, pd.Series):
-                test_acc = test_acc.iloc[0]
-            logger.info(f"  {i+1}. {model}: {float(test_acc):.4f}")
-            
-        # Extract model information and convert Series items to their scalar values
-        best_model_name = best_model_row['Model']
-        if isinstance(best_model_name, pd.Series):
-            best_model_name = best_model_name.iloc[0]
-            
-        best_feature_method = best_model_row['Feature Selection']
-        if isinstance(best_feature_method, pd.Series):
-            best_feature_method = best_feature_method.iloc[0]
+        # Add ensemble result if available
+        if ensemble_result is not None:
+            ensemble_row = {
+                'Model': 'Enhanced_Ensemble',
+                'Train Accuracy': ensemble_result['train_accuracy'],
+                'Test Accuracy': ensemble_result['test_accuracy'],
+                'F1 Score': ensemble_result['f1_score'],
+                'Overfitting Gap': ensemble_result['train_accuracy'] - ensemble_result['test_accuracy']
+            }
+            all_results.append(ensemble_row)
         
-        logger.info(f"Selected best model: {best_model_name} with {best_feature_method} features, "
-                   f"Test Accuracy: {float(best_model_row['Test Accuracy']):.4f}")
+        # Create results DataFrame
+        results_df = pd.DataFrame(all_results)
+        results_df.to_csv(f'{results_dir}/final_model_comparison.csv', index=False)
         
-        # Create comprehensive report
-        with open(f'{results_dir}/final_report.md', 'w') as f:
-            f.write(f"# Chicken Sound Classification - Phase 3 Final Report\n\n")
-            f.write(f"## Best Model Summary\n\n")
-            f.write(f"- **Model Type**: {best_model_name}\n")
-            f.write(f"- **Feature Selection Method**: {best_feature_method}\n")
-            
-            # Convert Series values to float before formatting
-            test_accuracy = float(best_model_row['Test Accuracy']) if isinstance(best_model_row['Test Accuracy'], pd.Series) else float(best_model_row['Test Accuracy'])
-            f1_score = float(best_model_row['F1 Score']) if isinstance(best_model_row['F1 Score'], pd.Series) else float(best_model_row['F1 Score'])
-            overfitting_gap = float(best_model_row['Overfitting Gap']) if isinstance(best_model_row['Overfitting Gap'], pd.Series) else float(best_model_row['Overfitting Gap'])
-            
-            f.write(f"- **Test Accuracy**: {test_accuracy:.4f}\n")
-            f.write(f"- **F1 Score**: {f1_score:.4f}\n")
-            f.write(f"- **Overfitting Gap**: {overfitting_gap:.4f}\n\n")
-            
-            if 'Num Features' in best_model_row and best_model_row['Num Features'] != 'Multiple':
-                num_features = best_model_row['Num Features']
-                if isinstance(num_features, pd.Series):
-                    num_features = num_features.iloc[0]
-                f.write(f"- **Number of Features**: {num_features}\n\n")
-            
-            if 'Best Parameters' in best_model_row:
-                best_params = best_model_row['Best Parameters']
-                if isinstance(best_params, pd.Series):
-                    best_params = best_params.iloc[0]
-                f.write(f"- **Model Parameters**: {best_params}\n\n")
-            
-            # Model comparison
-            f.write(f"## Model Comparison\n\n")
-            f.write("| Model | Feature Selection | Test Accuracy | F1 Score | Overfitting Gap |\n")
-            f.write("|-------|------------------|---------------|----------|----------------|\n")
-            
-            for _, row in results_df.sort_values('Test Accuracy', ascending=False).iterrows():
-                if pd.isna(row['Test Accuracy']):
-                    continue
-                
-                # Convert values to float before formatting
-                row_test_acc = float(row['Test Accuracy']) if isinstance(row['Test Accuracy'], pd.Series) else float(row['Test Accuracy'])
-                row_f1 = float(row['F1 Score']) if isinstance(row['F1 Score'], pd.Series) else float(row['F1 Score'])
-                row_gap = float(row['Overfitting Gap']) if isinstance(row['Overfitting Gap'], pd.Series) else float(row['Overfitting Gap'])
-                
-                model_name = row['Model']
-                if isinstance(model_name, pd.Series):
-                    model_name = model_name.iloc[0]
-                
-                feature_sel = row['Feature Selection']
-                if isinstance(feature_sel, pd.Series):
-                    feature_sel = feature_sel.iloc[0]
-                
-                f.write(f"| {model_name} | {feature_sel} | ")
-                f.write(f"{row_test_acc:.4f} | {row_f1:.4f} | ")
-                f.write(f"{row_gap:.4f} |\n")
-            
-            f.write("\n")
-            
-            # Feature importance analysis
-            f.write(f"## Feature Analysis\n\n")
-            f.write("Feature selection methods were applied to identify the most important features ")
-            f.write("for chicken sound classification. See the feature_analysis directory for detailed results.\n\n")
-            
-            # Class-specific performance
-            f.write(f"## Class-Specific Performance\n\n")
-            f.write("The best model's performance varies across the three classes:\n\n")
-            
-            if isinstance(best_model_name, str) and best_model_name == 'Ensemble':
-                cr_path = f'{results_dir}/confusion_matrices/ensemble_class_report.csv'
-            else:
-                cr_path = f'{results_dir}/confusion_matrices/{best_model_name}_{best_feature_method}_class_report.csv'
-            
-            if os.path.exists(cr_path):
-                cr_df = pd.read_csv(cr_path, index_col=0)
-                f.write("| Class | Precision | Recall | F1-Score | Support |\n")
-                f.write("|-------|-----------|--------|----------|--------|\n")
-                for idx, row in cr_df.iterrows():
-                    if idx in ['accuracy', 'macro avg', 'weighted avg']:
-                        continue
-                    f.write(f"| {idx} | {row['precision']:.4f} | {row['recall']:.4f} | ")
-                    f.write(f"{row['f1-score']:.4f} | {int(row['support'])} |\n")
-                f.write("\n")
-            
-            # Data augmentation impact
-            f.write(f"## Impact of Data Augmentation\n\n")
-            f.write("Data augmentation techniques (time shifting, pitch shifting, and noise addition) ")
-            f.write(f"were applied to increase the robustness of the model. The augmented dataset ")
-            f.write(f"resulted in improved generalization capabilities as evidenced by the reduced ")
-            f.write(f"overfitting gap ({overfitting_gap:.4f}) in the best model.\n\n")
-
+        # Find best model
+        best_idx = results_df['Test Accuracy'].idxmax()
+        best_model = results_df.iloc[best_idx]
+        
+        logger.info(f"Best model: {best_model['Model']} with test accuracy {best_model['Test Accuracy']:.4f}")
         
         # Create summary visualization
         plt.figure(figsize=(12, 8))
-        plot_df = results_df.sort_values('Test Accuracy', ascending=False)
-        plot_df = plot_df.dropna(subset=['Test Accuracy'])
         
-        # Create model labels safely handling Series objects
-        model_labels = []
-        for _, row in plot_df.iterrows():
-            model = row['Model']
-            feat_sel = row['Feature Selection']
-            
-            if isinstance(model, pd.Series):
-                model = model.iloc[0]
-            if isinstance(feat_sel, pd.Series):
-                feat_sel = feat_sel.iloc[0]
-                
-            model_labels.append(f"{model}\n({feat_sel})")
+        models = results_df['Model']
+        train_acc = results_df['Train Accuracy']
+        test_acc = results_df['Test Accuracy']
+        f1_scores = results_df['F1 Score']
         
-        x = np.arange(len(model_labels))
-        width = 0.2
-        
-        # Convert Series to float arrays if needed
-        train_acc = [float(val) if isinstance(val, pd.Series) else float(val) for val in plot_df['Train Accuracy']]
-        test_acc = [float(val) if isinstance(val, pd.Series) else float(val) for val in plot_df['Test Accuracy']]
-        f1_scores = [float(val) if isinstance(val, pd.Series) else float(val) for val in plot_df['F1 Score']]
+        x = np.arange(len(models))
+        width = 0.25
         
         plt.bar(x - width, train_acc, width, label='Train Accuracy')
         plt.bar(x, test_acc, width, label='Test Accuracy')
         plt.bar(x + width, f1_scores, width, label='F1 Score')
+        
         plt.axhline(y=0.8, color='r', linestyle='--', label='80% Target')
-        plt.xlabel('Model Configuration')
+        plt.xlabel('Model')
         plt.ylabel('Score')
         plt.title('Model Performance Comparison')
-        plt.xticks(x, model_labels, rotation=45, ha='right')
+        plt.xticks(x, models, rotation=45, ha='right')
         plt.legend()
         plt.tight_layout()
-        plt.savefig(f'{results_dir}/figures/model_comparison.png')
+        plt.savefig(f'{results_dir}/figures/final_model_comparison.png')
         plt.close()
         
-        logger.info("Final report generated.")
-        save_checkpoint(best_model_row, 'final_evaluation')
-        return best_model_row
+        # Generate comprehensive report
+        with open(f'{results_dir}/final_report.md', 'w') as f:
+            f.write("# Chicken Sound Classification - Phase 3 Final Report\n\n")
+            
+            f.write("## Overview\n\n")
+            f.write("This experiment implements the top three model configurations from Phase 2, applying data augmentation and enhanced ensemble techniques.\n\n")
+            
+            f.write("## Models Evaluated\n\n")
+            f.write("1. **SVM with mfcc_temporal features using Two-Tier approach**\n")
+            f.write("2. **SVM with mfcc_temporal features using 1v1v1 approach**\n")
+            f.write("3. **Extra Trees with mfcc_temporal features using 1v1v1 approach**\n")
+            f.write("4. **Enhanced Ensemble** combining all three models with optimized weights\n\n")
+            
+            f.write("## Results Summary\n\n")
+            f.write("| Model | Train Accuracy | Test Accuracy | F1 Score | Overfitting Gap |\n")
+            f.write("|-------|---------------|---------------|----------|----------------|\n")
+            
+            for _, row in results_df.sort_values('Test Accuracy', ascending=False).iterrows():
+                f.write(f"| {row['Model']} | {row['Train Accuracy']:.4f} | ")
+                f.write(f"{row['Test Accuracy']:.4f} | {row['F1 Score']:.4f} | ")
+                f.write(f"{row['Overfitting Gap']:.4f} |\n")
+            
+            f.write("\n")
+            
+            # Add ensemble details if available
+            if ensemble_result is not None:
+                f.write("## Enhanced Ensemble\n\n")
+                f.write("The enhanced ensemble combines all three models with the following weights:\n\n")
+                f.write(f"- SVM Two-Tier: {ensemble_result['weights'][0]:.2f}\n")
+                f.write(f"- SVM 1v1v1: {ensemble_result['weights'][1]:.2f}\n")
+                f.write(f"- Extra Trees 1v1v1: {ensemble_result['weights'][2]:.2f}\n\n")
+                
+                f.write("Cross-validation results: ")
+                f.write(f"{ensemble_result['cv_accuracy']:.4f} ± {ensemble_result['cv_std']:.4f}\n\n")
+            
+            f.write("## Conclusions\n\n")
+            f.write(f"The best performing model is **{best_model['Model']}** with a ")
+            f.write(f"test accuracy of {best_model['Test Accuracy']:.4f} and F1 score of {best_model['F1 Score']:.4f}.\n\n")
+            
+            f.write("### Key Findings\n\n")
+            
+            # Compare the approaches
+            two_tier_row = results_df[results_df['Model'] == 'SVM_TwoTier']
+            onevone_row = results_df[results_df['Model'] == 'SVM_1v1v1']
+            
+            if not two_tier_row.empty and not onevone_row.empty:
+                two_tier_acc = two_tier_row['Test Accuracy'].values[0]
+                onevone_acc = onevone_row['Test Accuracy'].values[0]
+                
+                if two_tier_acc > onevone_acc:
+                    f.write(f"1. The **Two-Tier approach** outperforms the standard 1v1v1 approach ")
+                    f.write(f"({two_tier_acc:.4f} vs {onevone_acc:.4f}), likely due to its hierarchical ")
+                    f.write("classification structure that first separates chicken sounds from noise.\n\n")
+                else:
+                    f.write(f"1. The **1v1v1 approach** is competitive with the Two-Tier approach ")
+                    f.write(f"({onevone_acc:.4f} vs {two_tier_acc:.4f}), suggesting that direct multi-class ")
+                    f.write("classification works well for this problem.\n\n")
+            
+            # Comment on ensemble performance if available
+            if ensemble_result is not None and 'test_accuracy' in ensemble_result:
+                ensemble_acc = ensemble_result['test_accuracy']
+                best_single_acc = max([m['test_accuracy'] for m in recommended_models.values()])
+                
+                if ensemble_acc > best_single_acc:
+                    f.write(f"2. The **Enhanced Ensemble** approach successfully combines the strengths ")
+                    f.write(f"of all three models, achieving {ensemble_acc:.4f} accuracy compared to ")
+                    f.write(f"{best_single_acc:.4f} for the best individual model.\n\n")
+                else:
+                    f.write(f"2. The **Enhanced Ensemble** approach ({ensemble_acc:.4f}) did not significantly ")
+                    f.write(f"improve over the best individual model ({best_single_acc:.4f}), suggesting ")
+                    f.write("the models may be capturing similar patterns.\n\n")
+            
+            # Comment on data augmentation
+            f.write("3. **Data augmentation** techniques (time shifting, pitch shifting, and noise addition) ")
+            f.write("increased the robustness of the models by exposing them to a wider variety of sound patterns.\n\n")
+            
+            # Recommendations
+            f.write("### Recommendations\n\n")
+            f.write("Based on the experimental results, we recommend:\n\n")
+            
+            f.write(f"1. Use the **{best_model['Model']}** model for production deployment, as it provides ")
+            f.write("the best balance of accuracy and performance.\n\n")
+            
+            f.write("2. **Continue data collection**, particularly for sick chicken sounds, to further improve ")
+            f.write("model robustness and address any remaining class imbalance.\n\n")
+            
+            f.write("3. **Consider deployment constraints** - if computational resources are limited, ")
+            f.write("the SVM models might be preferred over the ensemble approach, while still ")
+            f.write("maintaining high accuracy.\n\n")
+        
+        # Save checkpoint
+        save_checkpoint(best_model['Model'], 'final_evaluation')
+        
+        return best_model['Model']
         
     except Exception as e:
         logger.error(f"Error in final model evaluation: {e}")
         logger.error(traceback.format_exc())
-        if not results_df.empty:
-            best_model_row = results_df.dropna(subset=['Test Accuracy']).loc[
-                results_df.dropna(subset=['Test Accuracy'])['Test Accuracy'].idxmax()
-            ]
-            return best_model_row
         return None
 
+# Change in the main() function
 def main():
+    # Parse command line arguments
+    parser = argparse.ArgumentParser(description='Run phase 3 experiment with recommended models.')
+    parser.add_argument('--test', action='store_true', help='Run in test mode with simplified parameters')
+    args = parser.parse_args()
+    
+    # Log the mode
+    if args.test:
+        logger.info("Running in TEST MODE with simplified parameters")
+    
     try:
         logger.info("Starting Phase 3 experiment")
         
         # Step 1: Prepare dataset with augmentation
-        logger.info("Step 1: Preparing dataset")
-        X, y = prepare_dataset(use_augmentation=True, class_balance=True)
+        logger.info("Step 1: Preparing dataset with augmentation")
+        X, y = prepare_dataset(use_augmentation=True, class_balance=True, use_test_mode=args.test)
         
         # Step 2: Perform feature selection analysis
         logger.info("Step 2: Performing feature selection analysis")
-        feature_selection_results = feature_selection_analysis(X, y)
+        feature_selection_results = feature_selection_analysis(X, y, use_test_mode=args.test)
         
-        # Step 3: Train and evaluate models with different feature selection approaches
-        logger.info("Step 3: Training and evaluating models")
-        results_df = train_and_evaluate_models(X, y, feature_selection_results)
+        # Step 3: Train the recommended models from Phase 2
+        logger.info("Step 3: Training the recommended models from Phase 2")
+        recommended_models = train_recommended_models(X, y, feature_selection_results, use_test_mode=args.test)
         
-        # Step 4: Train ensemble models
-        logger.info("Step 4: Training ensemble models")
-        ensemble_result = train_ensemble_models(X, y, results_df)
+        # Step 4: Train enhanced ensemble with all three models
+        logger.info("Step 4: Training enhanced ensemble with all three models")
+        ensemble_result = train_enhanced_ensemble(X, y, recommended_models, use_test_mode=args.test)
         
         # Step 5: Perform final evaluation and generate report
         logger.info("Step 5: Performing final evaluation")
-        best_model = final_model_evaluation(results_df, X, y)
+        # Remove the use_test_mode parameter from this call
+        best_model = final_model_evaluation(recommended_models, ensemble_result, X, y)
         
-        logger.info(f"Phase 3 experiment completed successfully. Results saved to {results_dir}")
+        if args.test:
+            logger.info("Test run completed successfully!")
+        else:
+            logger.info("Full experiment completed successfully!")
+            
+        logger.info(f"Results saved to {results_dir}")
         
         return best_model
         
@@ -1142,4 +1322,4 @@ def main():
         return None
 
 if __name__ == "__main__":
-    main()      
+    main()

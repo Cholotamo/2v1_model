@@ -1,0 +1,58 @@
+2025-03-18 02:21:56,894 - INFO - Starting Phase 3 experiment
+2025-03-18 02:21:56,894 - INFO - Step 1: Preparing dataset with augmentation
+2025-03-18 02:21:56,894 - INFO - Processing healthy chicken audio files...
+2025-03-18 02:25:43,016 - INFO - Processing sick chicken audio files...
+2025-03-18 02:29:29,090 - INFO - Processing noise audio files...
+2025-03-18 02:33:16,959 - INFO - Applying SMOTE for class balancing...
+2025-03-18 02:33:16,966 - INFO - Dataset prepared: 42000 samples with 24 features per sample
+2025-03-18 02:33:17,145 - INFO - Checkpoint saved: dataset
+2025-03-18 02:33:17,145 - INFO - Step 2: Performing feature selection analysis
+2025-03-18 02:33:17,145 - INFO - Performing feature selection analysis...
+2025-03-18 02:33:17,145 - INFO - Calculating feature importance with Extra Trees...
+2025-03-18 02:33:19,721 - INFO - Running Recursive Feature Elimination...
+2025-03-18 03:30:25,783 - INFO - RFECV selected 24 features
+2025-03-18 03:30:25,783 - INFO - Calculating mutual information...
+2025-03-18 03:30:27,942 - INFO - Running PCA...
+2025-03-18 03:30:27,988 - INFO - PCA selected 5 components
+2025-03-18 03:30:27,988 - INFO - Checkpoint saved: feature_selection
+2025-03-18 03:30:28,008 - INFO - Step 3: Training the recommended models from Phase 2
+2025-03-18 03:30:28,009 - INFO - Training recommended models from Phase 2...
+2025-03-18 03:30:28,025 - INFO - Training SVM with Two-Tier approach...
+2025-03-18 04:19:07,217 - INFO - SVM Two-Tier Results:
+2025-03-18 04:19:07,219 - INFO -   Train Accuracy: 0.9482
+2025-03-18 04:19:07,219 - INFO -   Test Accuracy: 0.8981
+2025-03-18 04:19:07,219 - INFO -   F1 Score: 0.8981
+2025-03-18 04:19:07,368 - INFO - Training SVM with 1v1v1 approach...
+2025-03-18 05:00:26,782 - INFO - SVM 1v1v1 Results:
+2025-03-18 05:00:26,783 - INFO -   Train Accuracy: 0.9503
+2025-03-18 05:00:26,783 - INFO -   Test Accuracy: 0.9019
+2025-03-18 05:00:26,783 - INFO -   F1 Score: 0.9018
+2025-03-18 05:00:26,857 - INFO - Training Extra Trees with 1v1v1 approach...
+2025-03-18 05:10:02,247 - INFO - Extra Trees 1v1v1 Results:
+2025-03-18 05:10:02,248 - INFO -   Train Accuracy: 1.0000
+2025-03-18 05:10:02,248 - INFO -   Test Accuracy: 0.9179
+2025-03-18 05:10:02,248 - INFO -   F1 Score: 0.9177
+2025-03-18 05:10:12,782 - INFO - Checkpoint saved: recommended_models
+2025-03-18 05:10:12,785 - INFO - Step 4: Training enhanced ensemble with all three models
+2025-03-18 05:10:12,785 - INFO - Training enhanced ensemble with all three recommended models...
+2025-03-18 05:10:12,839 - INFO - Optimizing ensemble weights...
+2025-03-18 05:10:20,510 - INFO - Trying 11 weight combinations...
+2025-03-18 05:10:20,515 - INFO - Optimal weights: SVM Two-Tier: 0.20, SVM 1v1v1: 0.40, ET 1v1v1: 0.40
+2025-03-18 05:10:20,515 - INFO - Validating ensemble with cross-validation...
+2025-03-18 05:34:22,314 - INFO - Ensemble cross-validation accuracy: 0.9064 ± 0.0032
+2025-03-18 05:35:18,783 - INFO - Accuracy when 1 model(s) agree: 0.7653 (98 samples)
+2025-03-18 05:35:18,784 - INFO - Accuracy when 2 model(s) agree: 0.4297 (384 samples)
+2025-03-18 05:35:18,784 - INFO - Accuracy when 3 model(s) agree: 0.9685 (5816 samples)
+2025-03-18 05:35:18,928 - INFO - Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+2025-03-18 05:35:18,933 - INFO - Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+2025-03-18 05:35:19,181 - INFO - Enhanced Ensemble Results:
+2025-03-18 05:35:19,181 - INFO -   Train Accuracy: 0.9767
+2025-03-18 05:35:19,181 - INFO -   Test Accuracy: 0.9324
+2025-03-18 05:35:19,181 - INFO -   F1 Score: 0.9323
+2025-03-18 05:35:19,181 - INFO -   CV Accuracy: 0.9064 ± 0.0032
+2025-03-18 05:35:19,560 - INFO - Checkpoint saved: enhanced_ensemble
+2025-03-18 05:35:19,588 - INFO - Step 5: Performing final evaluation
+2025-03-18 05:35:19,590 - INFO - Best model: Enhanced_Ensemble with test accuracy 0.9324
+2025-03-18 05:35:19,655 - INFO - Checkpoint saved: final_evaluation
+2025-03-18 05:35:19,655 - INFO - Full experiment completed successfully!
+2025-03-18 05:35:19,655 - INFO - Results saved to phase3_experiment_20250318_022156
