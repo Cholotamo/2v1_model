@@ -1,0 +1,20 @@
+2025-03-18 09:10:32,087 - INFO - Starting Phase 4 experiment
+2025-03-18 09:10:32,088 - INFO - Step 1: Preparing dataset with augmentation
+2025-03-18 09:10:32,088 - INFO - Processing healthy chicken audio files...
+2025-03-18 09:22:55,312 - INFO - Processing sick chicken audio files...
+2025-03-18 09:36:44,860 - INFO - Processing noise audio files...
+2025-03-18 09:47:31,492 - INFO - Applying SMOTE for class balancing...
+2025-03-18 09:47:31,514 - INFO - Dataset prepared: 42000 samples with 24 features each
+2025-03-18 09:47:32,300 - INFO - Checkpoint saved: dataset
+2025-03-18 09:47:32,300 - INFO - Step 2: Performing feature selection analysis
+2025-03-18 09:47:32,301 - INFO - Performing feature selection analysis...
+2025-03-18 11:05:22,890 - INFO - RFECV selected 24 features
+2025-03-18 11:05:25,513 - INFO - PCA selected 5 components
+2025-03-18 11:05:25,514 - INFO - Checkpoint saved: feature_selection
+2025-03-18 11:05:25,527 - INFO - Step 3: Training recommended models (Optuna tuning)
+2025-03-18 14:56:08,094 - INFO - Step 4: Training enhanced ensemble with weight tuning (Optuna)
+2025-03-18 15:04:23,001 - INFO - Step 5: Performing final evaluation and generating report
+2025-03-18 15:04:23,283 - INFO - Best model: Enhanced_Ensemble with test accuracy 0.9394
+2025-03-18 15:04:23,728 - INFO - Checkpoint saved: final_evaluation
+2025-03-18 15:04:23,729 - INFO - Full experiment completed successfully!
+2025-03-18 15:04:23,729 - INFO - Results saved to phase4_experiment_20250318_091032
