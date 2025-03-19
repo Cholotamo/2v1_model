@@ -235,6 +235,8 @@ def run_experiment():
     else:
         X, y = extract_features_for_dataset()
     
+
+    
     X_train, X_test, y_train, y_test = train_test_split(
         X, y, test_size=0.2, random_state=42, stratify=y)
     
@@ -387,6 +389,7 @@ def run_experiment():
 # ---- Visualization Function ----
 def visualize_results(results_df, label_map):
     """Generate rich visualizations"""
+    print("Generating Approach Comparison Graph...")  # Print to verify code execution
     # 1. Approach comparison
     plt.figure(figsize=(16, 8))
     sns.barplot(x='Model', y='Test Accuracy', hue='Approach', data=results_df)
@@ -396,7 +399,8 @@ def visualize_results(results_df, label_map):
     plt.grid(True, linestyle='--', alpha=0.7) 
     plt.savefig(f'{results_dir}/figures/approach_comparison.png', dpi=300)
     plt.close()
-    
+
+    print("Generating Overfitting Comparison Graph...")  # Print to verify code execution
     # 2. Overfitting comparison
     plt.figure(figsize=(16, 8))
     sns.barplot(x='Model', y='Overfitting Gap', hue='Approach', data=results_df)
@@ -405,7 +409,8 @@ def visualize_results(results_df, label_map):
     plt.grid(True, linestyle='--', alpha=0.7)  
     plt.savefig(f'{results_dir}/figures/overfitting_comparison.png', dpi=300)
     plt.close()
-    
+
+    print("Generating Class Distribution Graph...")  # Print to verify code execution
     # 3. Class distribution (unchanged)
     X, y = np.load(f'{results_dir}/mfcc_features.npy'), np.load(f'{results_dir}/mfcc_labels.npy')
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42, stratify=y)
@@ -425,6 +430,7 @@ def visualize_results(results_df, label_map):
     plt.tight_layout()
     plt.savefig(f'{results_dir}/figures/class_distribution.png', dpi=300)
     plt.close()
+
 
 # ---- Summary Report Function ----
 def generate_summary_report(results_df):
