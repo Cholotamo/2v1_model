@@ -1,8 +1,8 @@
-# Chicken Sound Classification - Phase 4 Final Report
+# Chicken Sound Classification - Phase 5 Final Report
 
 ## Overview
 
-This experiment uses data augmentation and an enhanced ensemble with Optuna tuning for hyperparameters and ensemble weights.
+This experiment uses data augmentation and an enhanced ensemble with deep learning based hyperparameter tuning for traditional ML models.
 
 ## Models Evaluated
 
@@ -15,28 +15,28 @@ This experiment uses data augmentation and an enhanced ensemble with Optuna tuni
 
 | Model | Train Accuracy | Test Accuracy | F1 Score | Overfitting Gap |
 |-------|----------------|---------------|----------|----------------|
-| Enhanced_Ensemble | 0.9889 | 0.9376 | 0.9375 | 0.0513 |
-| ET_1v1v1 | 1.0000 | 0.9149 | 0.9146 | 0.0851 |
-| SVM_1v1v1 | 0.9525 | 0.8975 | 0.8975 | 0.0550 |
-| SVM_TwoTier | 0.9502 | 0.8958 | 0.8959 | 0.0543 |
+| Enhanced_Ensemble | 0.9882 | 0.9349 | 0.9348 | 0.0533 |
+| ET_1v1v1 | 1.0000 | 0.9200 | 0.9198 | 0.0800 |
+| SVM_TwoTier | 0.9503 | 0.8880 | 0.8883 | 0.0623 |
+| SVM_1v1v1 | 0.9499 | 0.8877 | 0.8879 | 0.0621 |
 
 ## Enhanced Ensemble
 
 The ensemble uses the following weights:
 
-- SVM Two-Tier: 0.30
-- SVM 1v1v1: 0.12
-- Extra Trees 1v1v1: 0.58
+- SVM Two-Tier: 0.22
+- SVM 1v1v1: 0.26
+- Extra Trees 1v1v1: 0.52
 
 ## Conclusions
 
-The best performing model is **Enhanced_Ensemble** with a test accuracy of 0.9376 and F1 score of 0.9375.
+The best performing model is **Enhanced_Ensemble** with a test accuracy of 0.9349 and F1 score of 0.9348.
 
 ### Key Findings
 
-1. The **1v1v1 approach** is competitive with the Two-Tier approach (0.8975 vs 0.8958).
+1. The **Two-Tier approach** outperforms the standard 1v1v1 approach (0.8880 vs 0.8877).
 
-2. The **Enhanced Ensemble** successfully combines the models, achieving 0.9376 accuracy compared to 0.9149.
+2. The **Enhanced Ensemble** successfully combines the models, achieving 0.9349 accuracy compared to 0.9200.
 
 3. Data augmentation improved model robustness by exposing the models to varied sound patterns.
 

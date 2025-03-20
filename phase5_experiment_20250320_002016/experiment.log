@@ -120,3 +120,118 @@
 2025-03-20 13:26:38,505 - INFO - [RL SVM] Episode 49: C=0.4831, gamma=0.6645, reward=0.8781
 2025-03-20 13:27:35,840 - INFO - [RL SVM] Episode 50: C=1.2002, gamma=0.8530, reward=0.9042
 2025-03-20 13:27:35,920 - INFO - Best SVM hyperparameters found: (2.898817300796509, 0.6745018362998962) with reward 0.9123
+2025-03-20 13:42:59,441 - INFO - Tuning SVM 1v1v1...
+2025-03-20 13:42:59,441 - INFO - Starting deep RL tuning for SVM hyperparameters...
+2025-03-20 13:56:06,021 - INFO - [RL SVM] Episode 1: C=2.7495, gamma=13.5922, reward=0.7133
+2025-03-20 13:59:36,479 - INFO - [RL SVM] Episode 2: C=0.3869, gamma=0.7575, reward=0.7918
+2025-03-20 14:02:43,570 - INFO - [RL SVM] Episode 3: C=4.3225, gamma=3.4551, reward=0.7944
+2025-03-20 14:05:48,444 - INFO - [RL SVM] Episode 4: C=1.9667, gamma=0.4074, reward=0.8590
+2025-03-20 14:08:07,784 - INFO - [RL SVM] Episode 5: C=0.9034, gamma=1.9948, reward=0.8071
+2025-03-20 14:11:43,815 - INFO - [RL SVM] Episode 6: C=0.2347, gamma=0.6864, reward=0.7513
+2025-03-20 14:13:12,931 - INFO - [RL SVM] Episode 7: C=0.4768, gamma=1.7095, reward=0.7716
+2025-03-20 14:18:13,169 - INFO - [RL SVM] Episode 8: C=2.4396, gamma=1.5579, reward=0.8408
+2025-03-20 14:23:00,510 - INFO - [RL SVM] Episode 9: C=0.9624, gamma=0.6966, reward=0.8435
+2025-03-20 14:30:51,977 - INFO - [RL SVM] Episode 10: C=0.7196, gamma=0.8071, reward=0.8284
+2025-03-20 14:37:56,751 - INFO - [RL SVM] Episode 11: C=0.5877, gamma=0.6853, reward=0.8214
+2025-03-20 14:46:57,410 - INFO - [RL SVM] Episode 12: C=1.1715, gamma=2.2844, reward=0.8142
+2025-03-20 14:54:47,169 - INFO - [RL SVM] Episode 13: C=1.7492, gamma=1.3745, reward=0.8421
+2025-03-20 15:04:49,221 - INFO - [RL SVM] Episode 14: C=5.2106, gamma=2.6694, reward=0.8126
+2025-03-20 15:09:31,754 - INFO - [RL SVM] Episode 15: C=0.4370, gamma=3.3128, reward=0.7192
+2025-03-20 15:15:20,910 - INFO - [RL SVM] Episode 16: C=2.4034, gamma=0.6632, reward=0.8613
+2025-03-20 15:18:10,913 - INFO - [RL SVM] Episode 17: C=0.3052, gamma=0.2486, reward=0.8007
+2025-03-20 15:20:36,047 - INFO - [RL SVM] Episode 18: C=0.7059, gamma=0.2676, reward=0.8296
+2025-03-20 15:21:46,718 - INFO - [RL SVM] Episode 19: C=0.4187, gamma=0.7992, reward=0.7961
+2025-03-20 15:24:29,609 - INFO - [RL SVM] Episode 20: C=2.3935, gamma=1.9038, reward=0.8304
+2025-03-20 15:25:57,657 - INFO - [RL SVM] Episode 21: C=0.8302, gamma=0.6903, reward=0.8379
+2025-03-20 15:27:56,901 - INFO - [RL SVM] Episode 22: C=1.5737, gamma=0.8304, reward=0.8533
+2025-03-20 15:29:19,845 - INFO - [RL SVM] Episode 23: C=0.5816, gamma=1.0787, reward=0.8089
+2025-03-20 15:31:35,465 - INFO - [RL SVM] Episode 24: C=1.5278, gamma=1.1803, reward=0.8460
+2025-03-20 15:32:56,617 - INFO - [RL SVM] Episode 25: C=0.5683, gamma=1.0191, reward=0.8093
+2025-03-20 15:34:22,979 - INFO - [RL SVM] Episode 26: C=0.3551, gamma=1.7180, reward=0.7336
+2025-03-20 15:35:40,237 - INFO - [RL SVM] Episode 27: C=0.1964, gamma=0.7979, reward=0.7205
+2025-03-20 15:42:16,085 - INFO - [RL SVM] Episode 28: C=1.6335, gamma=3.3178, reward=0.7954
+2025-03-20 15:50:53,910 - INFO - [RL SVM] Episode 29: C=2.5360, gamma=0.7448, reward=0.8605
+2025-03-20 15:59:58,770 - INFO - [RL SVM] Episode 30: C=2.9639, gamma=2.2666, reward=0.8214
+2025-03-20 16:07:15,686 - INFO - [RL SVM] Episode 31: C=2.2770, gamma=0.7948, reward=0.8587
+2025-03-20 16:16:55,186 - INFO - [RL SVM] Episode 32: C=1.5091, gamma=1.4864, reward=0.8379
+2025-03-20 16:23:50,271 - INFO - [RL SVM] Episode 33: C=1.5687, gamma=1.0896, reward=0.8480
+2025-03-20 16:28:06,176 - INFO - [RL SVM] Episode 34: C=0.5966, gamma=1.0375, reward=0.8112
+2025-03-20 16:35:39,717 - INFO - [RL SVM] Episode 35: C=1.1030, gamma=1.5051, reward=0.8324
+2025-03-20 16:43:18,950 - INFO - [RL SVM] Episode 36: C=1.1351, gamma=1.5500, reward=0.8320
+2025-03-20 16:48:46,261 - INFO - [RL SVM] Episode 37: C=2.3167, gamma=0.6460, reward=0.8609
+2025-03-20 16:52:58,529 - INFO - [RL SVM] Episode 38: C=0.2873, gamma=2.0208, reward=0.6746
+2025-03-20 16:55:19,943 - INFO - [RL SVM] Episode 39: C=4.7789, gamma=0.1911, reward=0.8572
+2025-03-20 17:00:29,407 - INFO - [RL SVM] Episode 40: C=0.6866, gamma=1.1013, reward=0.8168
+2025-03-20 17:05:39,618 - INFO - [RL SVM] Episode 41: C=0.6634, gamma=1.3134, reward=0.8094
+2025-03-20 17:13:41,470 - INFO - [RL SVM] Episode 42: C=1.1480, gamma=1.8311, reward=0.8250
+2025-03-20 17:21:48,939 - INFO - [RL SVM] Episode 43: C=1.0451, gamma=1.9943, reward=0.8179
+2025-03-20 17:25:07,309 - INFO - [RL SVM] Episode 44: C=0.7654, gamma=0.4518, reward=0.8358
+2025-03-20 17:31:16,420 - INFO - [RL SVM] Episode 45: C=1.6454, gamma=0.8307, reward=0.8540
+2025-03-20 17:35:09,579 - INFO - [RL SVM] Episode 46: C=1.2578, gamma=0.4706, reward=0.8506
+2025-03-20 17:39:05,889 - INFO - [RL SVM] Episode 47: C=0.3887, gamma=1.1935, reward=0.7721
+2025-03-20 17:45:39,236 - INFO - [RL SVM] Episode 48: C=0.7584, gamma=2.4242, reward=0.7801
+2025-03-20 17:51:25,703 - INFO - [RL SVM] Episode 49: C=0.7916, gamma=1.0091, reward=0.8285
+2025-03-20 17:59:41,709 - INFO - [RL SVM] Episode 50: C=1.2662, gamma=1.9099, reward=0.8247
+2025-03-20 17:59:42,110 - INFO - Best SVM hyperparameters found: (2.4034132957458496, 0.6632076501846313) with reward 0.8613
+2025-03-20 18:15:53,434 - INFO - Training Extra Trees classifier...
+2025-03-20 18:15:59,371 - INFO - Step 4: Training enhanced ensemble with weight tuning (deep RL).
+2025-03-20 18:15:59,372 - INFO - Preparing data splits for ensemble training...
+2025-03-20 18:15:59,420 - INFO - Tuning ensemble weights using deep RL...
+2025-03-20 18:15:59,421 - INFO - Starting deep RL tuning for ensemble weights...
+2025-03-20 18:16:36,238 - INFO - [RL Ensemble] Episode 1: w1=0.4280, w2=0.3952, w3=0.1767, reward=0.9159
+2025-03-20 18:17:13,519 - INFO - [RL Ensemble] Episode 2: w1=0.2205, w2=0.2596, w3=0.5199, reward=0.9349
+2025-03-20 18:17:13,521 - INFO - [RL Ensemble] Episode 3: w1=0.5540, w2=0.6658, w3=-0.2197, reward=0.0000
+2025-03-20 18:17:13,522 - INFO - [RL Ensemble] Episode 4: w1=0.5553, w2=0.4019, w3=0.0428, reward=0.0000
+2025-03-20 18:17:13,522 - INFO - [RL Ensemble] Episode 5: w1=0.6342, w2=0.3365, w3=0.0293, reward=0.0000
+2025-03-20 18:17:13,523 - INFO - [RL Ensemble] Episode 6: w1=0.4591, w2=0.6009, w3=-0.0600, reward=0.0000
+2025-03-20 18:17:50,438 - INFO - [RL Ensemble] Episode 7: w1=0.3841, w2=0.4696, w3=0.1462, reward=0.9144
+2025-03-20 18:18:32,761 - INFO - [RL Ensemble] Episode 8: w1=0.2551, w2=0.5785, w3=0.1665, reward=0.9143
+2025-03-20 18:19:28,631 - INFO - [RL Ensemble] Episode 9: w1=0.3737, w2=0.3402, w3=0.2861, reward=0.9202
+2025-03-20 18:19:28,633 - INFO - [RL Ensemble] Episode 10: w1=0.5342, w2=0.5925, w3=-0.1267, reward=0.0000
+2025-03-20 18:20:11,560 - INFO - [RL Ensemble] Episode 11: w1=0.3185, w2=0.4179, w3=0.2636, reward=0.9189
+2025-03-20 18:20:11,562 - INFO - [RL Ensemble] Episode 12: w1=0.5559, w2=0.3630, w3=0.0811, reward=0.0000
+2025-03-20 18:20:11,563 - INFO - [RL Ensemble] Episode 13: w1=0.5017, w2=0.5878, w3=-0.0895, reward=0.0000
+2025-03-20 18:20:55,054 - INFO - [RL Ensemble] Episode 14: w1=0.3729, w2=0.2913, w3=0.3358, reward=0.9232
+2025-03-20 18:21:44,150 - INFO - [RL Ensemble] Episode 15: w1=0.2297, w2=0.2773, w3=0.4930, reward=0.9329
+2025-03-20 18:22:32,889 - INFO - [RL Ensemble] Episode 16: w1=0.2795, w2=0.3595, w3=0.3610, reward=0.9248
+2025-03-20 18:23:18,048 - INFO - [RL Ensemble] Episode 17: w1=0.2750, w2=0.5376, w3=0.1874, reward=0.9162
+2025-03-20 18:23:18,050 - INFO - [RL Ensemble] Episode 18: w1=0.4548, w2=0.4958, w3=0.0495, reward=0.0000
+2025-03-20 18:23:18,052 - INFO - [RL Ensemble] Episode 19: w1=0.5566, w2=0.5531, w3=-0.1097, reward=0.0000
+2025-03-20 18:23:18,053 - INFO - [RL Ensemble] Episode 20: w1=0.5193, w2=0.4316, w3=0.0491, reward=0.0000
+2025-03-20 18:23:18,055 - INFO - [RL Ensemble] Episode 21: w1=0.5797, w2=0.5383, w3=-0.1180, reward=0.0000
+2025-03-20 18:23:54,710 - INFO - [RL Ensemble] Episode 22: w1=0.4754, w2=0.3698, w3=0.1548, reward=0.9148
+2025-03-20 18:24:31,081 - INFO - [RL Ensemble] Episode 23: w1=0.3381, w2=0.3850, w3=0.2769, reward=0.9194
+2025-03-20 18:25:07,357 - INFO - [RL Ensemble] Episode 24: w1=0.3361, w2=0.5172, w3=0.1466, reward=0.9140
+2025-03-20 18:25:43,887 - INFO - [RL Ensemble] Episode 25: w1=0.3446, w2=0.3852, w3=0.2701, reward=0.9194
+2025-03-20 18:26:20,676 - INFO - [RL Ensemble] Episode 26: w1=0.4095, w2=0.3104, w3=0.2801, reward=0.9200
+2025-03-20 18:26:57,103 - INFO - [RL Ensemble] Episode 27: w1=0.3042, w2=0.5530, w3=0.1428, reward=0.9132
+2025-03-20 18:27:33,773 - INFO - [RL Ensemble] Episode 28: w1=0.3309, w2=0.5442, w3=0.1250, reward=0.9129
+2025-03-20 18:28:10,640 - INFO - [RL Ensemble] Episode 29: w1=0.2660, w2=0.2712, w3=0.4628, reward=0.9305
+2025-03-20 18:28:10,641 - INFO - [RL Ensemble] Episode 30: w1=0.6258, w2=0.5677, w3=-0.1935, reward=0.0000
+2025-03-20 18:28:10,643 - INFO - [RL Ensemble] Episode 31: w1=0.5321, w2=0.4699, w3=-0.0021, reward=0.0000
+2025-03-20 18:28:10,644 - INFO - [RL Ensemble] Episode 32: w1=0.5965, w2=0.4009, w3=0.0026, reward=0.0000
+2025-03-20 18:28:10,645 - INFO - [RL Ensemble] Episode 33: w1=0.3835, w2=0.5960, w3=0.0205, reward=0.0000
+2025-03-20 18:28:10,647 - INFO - [RL Ensemble] Episode 34: w1=0.4560, w2=0.5071, w3=0.0369, reward=0.0000
+2025-03-20 18:28:47,723 - INFO - [RL Ensemble] Episode 35: w1=0.4397, w2=0.4131, w3=0.1472, reward=0.9146
+2025-03-20 18:28:47,725 - INFO - [RL Ensemble] Episode 36: w1=0.4845, w2=0.5542, w3=-0.0387, reward=0.0000
+2025-03-20 18:29:24,754 - INFO - [RL Ensemble] Episode 37: w1=0.5667, w2=0.3276, w3=0.1057, reward=0.9133
+2025-03-20 18:29:24,755 - INFO - [RL Ensemble] Episode 38: w1=0.4140, w2=0.5252, w3=0.0608, reward=0.0000
+2025-03-20 18:30:01,708 - INFO - [RL Ensemble] Episode 39: w1=0.4302, w2=0.4458, w3=0.1240, reward=0.9140
+2025-03-20 18:30:01,709 - INFO - [RL Ensemble] Episode 40: w1=0.5903, w2=0.4337, w3=-0.0241, reward=0.0000
+2025-03-20 18:30:38,669 - INFO - [RL Ensemble] Episode 41: w1=0.4114, w2=0.4639, w3=0.1246, reward=0.9135
+2025-03-20 18:30:38,671 - INFO - [RL Ensemble] Episode 42: w1=0.5297, w2=0.5418, w3=-0.0715, reward=0.0000
+2025-03-20 18:30:38,673 - INFO - [RL Ensemble] Episode 43: w1=0.3423, w2=0.5737, w3=0.0840, reward=0.0000
+2025-03-20 18:31:15,490 - INFO - [RL Ensemble] Episode 44: w1=0.3169, w2=0.3637, w3=0.3194, reward=0.9217
+2025-03-20 18:31:51,825 - INFO - [RL Ensemble] Episode 45: w1=0.3070, w2=0.4915, w3=0.2014, reward=0.9160
+2025-03-20 18:32:28,296 - INFO - [RL Ensemble] Episode 46: w1=0.3484, w2=0.4469, w3=0.2046, reward=0.9162
+2025-03-20 18:33:04,601 - INFO - [RL Ensemble] Episode 47: w1=0.4511, w2=0.4300, w3=0.1190, reward=0.9137
+2025-03-20 18:33:04,603 - INFO - [RL Ensemble] Episode 48: w1=0.5533, w2=0.5747, w3=-0.1280, reward=0.0000
+2025-03-20 18:33:04,604 - INFO - [RL Ensemble] Episode 49: w1=0.5004, w2=0.5064, w3=-0.0068, reward=0.0000
+2025-03-20 18:33:40,852 - INFO - [RL Ensemble] Episode 50: w1=0.5104, w2=0.3186, w3=0.1710, reward=0.9154
+2025-03-20 18:33:40,988 - INFO - Best ensemble weights found: (0.2205369472503662, 0.2596057057380676, 0.5198573470115662) with reward 0.9349
+2025-03-20 18:37:10,990 - INFO - Step 5: Performing final evaluation and generating report.
+2025-03-20 18:37:10,992 - INFO - Final evaluation: Comparing all models now...
+2025-03-20 18:37:11,413 - INFO - Best model: Enhanced_Ensemble with test accuracy 0.9349
+2025-03-20 18:37:11,688 - INFO - [Checkpoint] Saved: final_evaluation
+2025-03-20 18:37:11,690 - INFO - Full experiment completed successfully!
+2025-03-20 18:37:11,691 - INFO - Results and reports saved to phase5_experiment_20250320_002016
