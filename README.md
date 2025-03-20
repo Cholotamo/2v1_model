@@ -1,7 +1,7 @@
 # 2V1_MODEL
 
 ## Team Name
-**Group 6** (Example—replace with your actual team name if needed)
+**Group 2** 
 
 ## Team Members
 1. **Muhammad Yusri Bin Abdullah** (2302950)  
