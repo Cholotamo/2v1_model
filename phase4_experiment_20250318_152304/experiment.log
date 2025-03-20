@@ -1,6 +1,0 @@
-2025-03-18 15:23:04,663 - INFO - Starting Phase 4 experiment
-2025-03-18 15:23:04,663 - INFO - Step 1: Preparing dataset without augmentation
-2025-03-18 15:23:04,665 - INFO - Checkpoint loaded: dataset from phase4_experiment_20250318_091032
-2025-03-18 15:23:04,665 - INFO - Step 2: Performing feature selection analysis
-2025-03-18 15:23:04,666 - INFO - Checkpoint loaded: feature_selection from phase4_experiment_20250318_091032
-2025-03-18 15:23:04,666 - INFO - Step 3: Training recommended models (Optuna tuning)

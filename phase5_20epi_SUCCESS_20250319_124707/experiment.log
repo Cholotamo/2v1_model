@@ -1,0 +1,20 @@
+2025-03-19 12:47:08,070 - INFO - Starting Phase 5 experiment
+2025-03-19 12:47:08,071 - INFO - Step 1: Preparing dataset with augmentation
+2025-03-19 12:47:08,071 - INFO - Processing healthy chicken audio files...
+2025-03-19 12:56:20,975 - INFO - Processing sick chicken audio files...
+2025-03-19 13:07:55,655 - INFO - Processing noise audio files...
+2025-03-19 13:17:26,133 - INFO - Applying SMOTE for class balancing...
+2025-03-19 13:17:26,139 - INFO - Dataset prepared: 42000 samples with 24 features each
+2025-03-19 13:17:26,659 - INFO - Checkpoint saved: dataset
+2025-03-19 13:17:26,659 - INFO - Step 2: Performing feature selection analysis
+2025-03-19 13:17:26,660 - INFO - Performing feature selection analysis...
+2025-03-19 14:33:53,093 - INFO - RFECV selected 24 features
+2025-03-19 14:34:01,159 - INFO - PCA selected 5 components
+2025-03-19 14:34:01,161 - INFO - Checkpoint saved: feature_selection
+2025-03-19 14:34:01,178 - INFO - Step 3: Training recommended models (Deep RL tuning)
+2025-03-19 17:41:42,248 - INFO - Step 4: Training enhanced ensemble with weight tuning (Deep RL)
+2025-03-19 17:44:57,634 - INFO - Step 5: Performing final evaluation and generating report
+2025-03-19 17:44:57,966 - INFO - Best model: Enhanced_Ensemble with test accuracy 0.9400
+2025-03-19 17:44:58,167 - INFO - Checkpoint saved: final_evaluation
+2025-03-19 17:44:58,168 - INFO - Full experiment completed successfully!
+2025-03-19 17:44:58,168 - INFO - Results saved to phase5_experiment_20250319_124707

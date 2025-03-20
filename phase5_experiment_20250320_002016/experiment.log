@@ -1,0 +1,122 @@
+2025-03-20 00:20:16,237 - INFO - Using device: cpu
+2025-03-20 00:20:16,238 - INFO - Welcome! Starting Phase 5 experiment on chicken sound classification.
+2025-03-20 00:20:16,239 - INFO - Step 1: Preparing dataset with augmentation.
+2025-03-20 00:20:16,239 - INFO - Hello! I'm starting dataset preparation.
+2025-03-20 00:20:16,239 - INFO - Step 1: Processing healthy chicken audio files...
+2025-03-20 01:04:33,594 - INFO - Step 2: Processing sick chicken audio files...
+2025-03-20 02:31:55,152 - INFO - Step 3: Processing noise audio files...
+2025-03-20 03:35:12,171 - INFO - Balancing classes using SMOTE...
+2025-03-20 03:35:12,183 - INFO - Dataset prepared: 42000 samples with 24 features each
+2025-03-20 03:35:13,133 - INFO - [Checkpoint] Saved: dataset
+2025-03-20 03:35:13,134 - INFO - Step 2: Performing feature selection analysis.
+2025-03-20 03:35:13,135 - INFO - Let's analyze the features to see which ones matter most!
+2025-03-20 06:23:43,388 - INFO - RFECV selected 24 features
+2025-03-20 06:23:51,344 - INFO - PCA selected 5 components
+2025-03-20 06:23:51,347 - INFO - [Checkpoint] Saved: feature_selection
+2025-03-20 06:23:51,367 - INFO - Step 3: Training recommended models with deep RL tuning.
+2025-03-20 06:23:51,368 - INFO - Starting model training with deep RL tuning...
+2025-03-20 06:23:51,407 - INFO - Tuning Two-Tier SVM (tier1 and tier2)...
+2025-03-20 06:23:51,415 - INFO - Starting deep RL tuning for SVM hyperparameters...
+2025-03-20 06:29:35,971 - INFO - [RL SVM] Episode 1: C=0.5734, gamma=1.1509, reward=0.8587
+2025-03-20 06:31:46,219 - INFO - [RL SVM] Episode 2: C=1.3760, gamma=0.1350, reward=0.8917
+2025-03-20 06:34:04,918 - INFO - [RL SVM] Episode 3: C=3.4257, gamma=0.1650, reward=0.9017
+2025-03-20 06:40:58,383 - INFO - [RL SVM] Episode 4: C=0.5493, gamma=2.4277, reward=0.8156
+2025-03-20 06:50:24,638 - INFO - [RL SVM] Episode 5: C=1.6536, gamma=3.5592, reward=0.8561
+2025-03-20 06:55:33,145 - INFO - [RL SVM] Episode 6: C=0.2958, gamma=1.0321, reward=0.8184
+2025-03-20 07:01:16,278 - INFO - [RL SVM] Episode 7: C=0.8401, gamma=1.4559, reward=0.8718
+2025-03-20 07:07:38,698 - INFO - [RL SVM] Episode 8: C=4.8357, gamma=0.4321, reward=0.9141
+2025-03-20 07:13:47,788 - INFO - [RL SVM] Episode 9: C=0.5863, gamma=2.2681, reward=0.8257
+2025-03-20 07:20:52,945 - INFO - [RL SVM] Episode 10: C=1.7386, gamma=1.4544, reward=0.8877
+2025-03-20 07:30:22,786 - INFO - [RL SVM] Episode 11: C=1.3099, gamma=1.2901, reward=0.8882
+2025-03-20 07:36:04,896 - INFO - [RL SVM] Episode 12: C=2.6666, gamma=0.9050, reward=0.9025
+2025-03-20 07:37:43,618 - INFO - [RL SVM] Episode 13: C=1.9943, gamma=0.1096, reward=0.8915
+2025-03-20 07:41:22,783 - INFO - [RL SVM] Episode 14: C=0.9919, gamma=0.3682, reward=0.8965
+2025-03-20 07:44:36,890 - INFO - [RL SVM] Episode 15: C=0.3108, gamma=0.5070, reward=0.8550
+2025-03-20 07:51:39,541 - INFO - [RL SVM] Episode 16: C=0.2617, gamma=1.9140, reward=0.7670
+2025-03-20 07:59:54,022 - INFO - [RL SVM] Episode 17: C=0.3573, gamma=6.7732, reward=0.7018
+2025-03-20 08:06:04,388 - INFO - [RL SVM] Episode 18: C=4.3972, gamma=0.9338, reward=0.9041
+2025-03-20 08:13:13,189 - INFO - [RL SVM] Episode 19: C=1.2796, gamma=1.6348, reward=0.8813
+2025-03-20 08:16:18,636 - INFO - [RL SVM] Episode 20: C=0.6018, gamma=0.3505, reward=0.8876
+2025-03-20 08:21:16,040 - INFO - [RL SVM] Episode 21: C=0.2858, gamma=0.9239, reward=0.8229
+2025-03-20 08:25:35,653 - INFO - [RL SVM] Episode 22: C=1.6603, gamma=0.4373, reward=0.9042
+2025-03-20 08:30:29,790 - INFO - [RL SVM] Episode 23: C=0.9687, gamma=0.5386, reward=0.8955
+2025-03-20 08:37:05,705 - INFO - [RL SVM] Episode 24: C=1.3547, gamma=1.2540, reward=0.8895
+2025-03-20 08:42:19,126 - INFO - [RL SVM] Episode 25: C=0.6313, gamma=0.7975, reward=0.8763
+2025-03-20 08:47:07,493 - INFO - [RL SVM] Episode 26: C=0.1102, gamma=1.1239, reward=0.7507
+2025-03-20 08:57:29,829 - INFO - [RL SVM] Episode 27: C=0.4134, gamma=1.7840, reward=0.8121
+2025-03-20 09:05:38,647 - INFO - [RL SVM] Episode 28: C=1.0332, gamma=0.7033, reward=0.8941
+2025-03-20 09:13:21,000 - INFO - [RL SVM] Episode 29: C=1.1165, gamma=1.2572, reward=0.8844
+2025-03-20 09:24:24,560 - INFO - [RL SVM] Episode 30: C=1.6905, gamma=1.6735, reward=0.8834
+2025-03-20 09:28:43,962 - INFO - [RL SVM] Episode 31: C=1.0695, gamma=0.2408, reward=0.8948
+2025-03-20 09:35:51,190 - INFO - [RL SVM] Episode 32: C=0.6857, gamma=0.6399, reward=0.8835
+2025-03-20 09:44:08,151 - INFO - [RL SVM] Episode 33: C=0.5333, gamma=0.8973, reward=0.8629
+2025-03-20 09:53:07,679 - INFO - [RL SVM] Episode 34: C=1.1103, gamma=1.0577, reward=0.8889
+2025-03-20 10:01:13,611 - INFO - [RL SVM] Episode 35: C=2.6309, gamma=0.5998, reward=0.9078
+2025-03-20 10:11:10,432 - INFO - [RL SVM] Episode 36: C=1.7826, gamma=2.6525, reward=0.8665
+2025-03-20 10:19:55,811 - INFO - [RL SVM] Episode 37: C=0.9075, gamma=1.0291, reward=0.8848
+2025-03-20 10:24:17,111 - INFO - [RL SVM] Episode 38: C=1.0072, gamma=0.3809, reward=0.8970
+2025-03-20 10:31:46,601 - INFO - [RL SVM] Episode 39: C=0.2216, gamma=1.1110, reward=0.7955
+2025-03-20 10:37:50,610 - INFO - [RL SVM] Episode 40: C=0.7274, gamma=3.1458, reward=0.8374
+2025-03-20 10:42:34,664 - INFO - [RL SVM] Episode 41: C=1.7367, gamma=0.5879, reward=0.9042
+2025-03-20 10:46:20,184 - INFO - [RL SVM] Episode 42: C=0.5446, gamma=2.1467, reward=0.8218
+2025-03-20 10:48:25,788 - INFO - [RL SVM] Episode 43: C=1.0707, gamma=0.1712, reward=0.8916
+2025-03-20 10:50:41,337 - INFO - [RL SVM] Episode 44: C=1.0105, gamma=0.7360, reward=0.8929
+2025-03-20 10:53:10,119 - INFO - [RL SVM] Episode 45: C=0.3390, gamma=1.3104, reward=0.8133
+2025-03-20 10:57:17,757 - INFO - [RL SVM] Episode 46: C=0.5679, gamma=0.8231, reward=0.8710
+2025-03-20 10:58:59,848 - INFO - [RL SVM] Episode 47: C=1.3069, gamma=0.5005, reward=0.9006
+2025-03-20 11:04:07,411 - INFO - [RL SVM] Episode 48: C=1.1285, gamma=0.9868, reward=0.8905
+2025-03-20 11:05:52,056 - INFO - [RL SVM] Episode 49: C=1.2663, gamma=0.6322, reward=0.9000
+2025-03-20 11:11:57,907 - INFO - [RL SVM] Episode 50: C=1.3359, gamma=2.3516, reward=0.8698
+2025-03-20 11:11:58,302 - INFO - Best SVM hyperparameters found: (4.835735321044922, 0.432058185338974) with reward 0.9141
+2025-03-20 11:20:14,421 - INFO - Starting deep RL tuning for SVM hyperparameters...
+2025-03-20 11:23:54,246 - INFO - [RL SVM] Episode 1: C=0.7663, gamma=2.4767, reward=0.8529
+2025-03-20 11:26:18,535 - INFO - [RL SVM] Episode 2: C=2.1368, gamma=0.9246, reward=0.9090
+2025-03-20 11:28:48,108 - INFO - [RL SVM] Episode 3: C=0.4761, gamma=0.5796, reward=0.8785
+2025-03-20 11:31:18,713 - INFO - [RL SVM] Episode 4: C=1.4354, gamma=1.1728, reward=0.9030
+2025-03-20 11:33:42,817 - INFO - [RL SVM] Episode 5: C=0.7924, gamma=1.5905, reward=0.8772
+2025-03-20 11:39:52,730 - INFO - [RL SVM] Episode 6: C=1.1480, gamma=10.0438, reward=0.8089
+2025-03-20 11:41:15,522 - INFO - [RL SVM] Episode 7: C=0.2500, gamma=1.1177, reward=0.8066
+2025-03-20 11:44:03,949 - INFO - [RL SVM] Episode 8: C=0.5459, gamma=0.9431, reward=0.8783
+2025-03-20 11:48:48,182 - INFO - [RL SVM] Episode 9: C=1.6325, gamma=2.2071, reward=0.8841
+2025-03-20 11:51:23,892 - INFO - [RL SVM] Episode 10: C=1.8601, gamma=0.4648, reward=0.9095
+2025-03-20 11:55:14,877 - INFO - [RL SVM] Episode 11: C=1.2554, gamma=1.2074, reward=0.9013
+2025-03-20 11:57:55,675 - INFO - [RL SVM] Episode 12: C=0.9618, gamma=0.5425, reward=0.9007
+2025-03-20 11:59:32,168 - INFO - [RL SVM] Episode 13: C=1.3555, gamma=0.1163, reward=0.8824
+2025-03-20 12:02:07,353 - INFO - [RL SVM] Episode 14: C=1.1877, gamma=1.2568, reward=0.9001
+2025-03-20 12:05:48,833 - INFO - [RL SVM] Episode 15: C=0.8324, gamma=1.3121, reward=0.8878
+2025-03-20 12:08:30,427 - INFO - [RL SVM] Episode 16: C=2.7054, gamma=1.3302, reward=0.9043
+2025-03-20 12:11:42,638 - INFO - [RL SVM] Episode 17: C=2.8988, gamma=0.6745, reward=0.9123
+2025-03-20 12:13:35,133 - INFO - [RL SVM] Episode 18: C=1.2427, gamma=0.6005, reward=0.9059
+2025-03-20 12:17:41,528 - INFO - [RL SVM] Episode 19: C=0.8324, gamma=2.8211, reward=0.8493
+2025-03-20 12:19:54,647 - INFO - [RL SVM] Episode 20: C=0.6554, gamma=11.3122, reward=0.7910
+2025-03-20 12:23:29,029 - INFO - [RL SVM] Episode 21: C=0.9241, gamma=1.0389, reward=0.8966
+2025-03-20 12:24:42,936 - INFO - [RL SVM] Episode 22: C=0.2665, gamma=0.6200, reward=0.8455
+2025-03-20 12:26:53,437 - INFO - [RL SVM] Episode 23: C=1.3387, gamma=0.8415, reward=0.9061
+2025-03-20 12:30:47,542 - INFO - [RL SVM] Episode 24: C=1.1170, gamma=1.2537, reward=0.8989
+2025-03-20 12:33:09,129 - INFO - [RL SVM] Episode 25: C=0.9972, gamma=1.1957, reward=0.8958
+2025-03-20 12:36:22,078 - INFO - [RL SVM] Episode 26: C=2.2797, gamma=0.6974, reward=0.9106
+2025-03-20 12:37:58,106 - INFO - [RL SVM] Episode 27: C=0.9632, gamma=0.5722, reward=0.9009
+2025-03-20 12:39:12,703 - INFO - [RL SVM] Episode 28: C=0.3997, gamma=0.6202, reward=0.8692
+2025-03-20 12:42:06,151 - INFO - [RL SVM] Episode 29: C=0.5566, gamma=1.0442, reward=0.8773
+2025-03-20 12:44:23,852 - INFO - [RL SVM] Episode 30: C=0.9465, gamma=1.1764, reward=0.8942
+2025-03-20 12:46:58,692 - INFO - [RL SVM] Episode 31: C=1.1411, gamma=1.3783, reward=0.8972
+2025-03-20 12:51:58,867 - INFO - [RL SVM] Episode 32: C=3.5482, gamma=2.6545, reward=0.8760
+2025-03-20 12:54:42,907 - INFO - [RL SVM] Episode 33: C=1.1840, gamma=1.5020, reward=0.8957
+2025-03-20 12:56:39,225 - INFO - [RL SVM] Episode 34: C=2.6769, gamma=0.2878, reward=0.9104
+2025-03-20 12:59:34,213 - INFO - [RL SVM] Episode 35: C=1.3314, gamma=1.7498, reward=0.8916
+2025-03-20 13:02:14,874 - INFO - [RL SVM] Episode 36: C=0.8861, gamma=2.3854, reward=0.8637
+2025-03-20 13:03:55,931 - INFO - [RL SVM] Episode 37: C=1.0355, gamma=0.6254, reward=0.9030
+2025-03-20 13:05:01,964 - INFO - [RL SVM] Episode 38: C=0.3964, gamma=0.4285, reward=0.8721
+2025-03-20 13:08:11,002 - INFO - [RL SVM] Episode 39: C=2.4972, gamma=2.3342, reward=0.8825
+2025-03-20 13:09:49,104 - INFO - [RL SVM] Episode 40: C=0.6669, gamma=0.7902, reward=0.8888
+2025-03-20 13:10:52,057 - INFO - [RL SVM] Episode 41: C=0.6991, gamma=0.3586, reward=0.8924
+2025-03-20 13:12:30,242 - INFO - [RL SVM] Episode 42: C=0.6188, gamma=1.7612, reward=0.8628
+2025-03-20 13:15:08,296 - INFO - [RL SVM] Episode 43: C=1.4174, gamma=0.4895, reward=0.9071
+2025-03-20 13:16:07,533 - INFO - [RL SVM] Episode 44: C=0.2236, gamma=0.2327, reward=0.8562
+2025-03-20 13:17:19,860 - INFO - [RL SVM] Episode 45: C=1.5537, gamma=0.3734, reward=0.9066
+2025-03-20 13:21:45,192 - INFO - [RL SVM] Episode 46: C=1.3746, gamma=1.7222, reward=0.8923
+2025-03-20 13:22:45,312 - INFO - [RL SVM] Episode 47: C=1.1579, gamma=0.3060, reward=0.8992
+2025-03-20 13:24:21,487 - INFO - [RL SVM] Episode 48: C=0.5786, gamma=1.5399, reward=0.8667
+2025-03-20 13:26:38,505 - INFO - [RL SVM] Episode 49: C=0.4831, gamma=0.6645, reward=0.8781
+2025-03-20 13:27:35,840 - INFO - [RL SVM] Episode 50: C=1.2002, gamma=0.8530, reward=0.9042
+2025-03-20 13:27:35,920 - INFO - Best SVM hyperparameters found: (2.898817300796509, 0.6745018362998962) with reward 0.9123
